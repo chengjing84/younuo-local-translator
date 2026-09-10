@@ -1,6 +1,6 @@
 ﻿$ErrorActionPreference = "Stop"
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
-$Version = "0.5.0"
+$Version = "0.6.0"
 $DistRoot = Join-Path $ProjectRoot "dist"
 $StageRoot = Join-Path $env:TEMP "younuo-package-$Version"
 $PackageRoot = Join-Path $StageRoot "younuo-local-translator"

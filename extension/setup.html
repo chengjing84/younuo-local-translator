@@ -1,42 +1,7 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>优诺本地翻译插件 · 首次运行</title>
-  <link rel="stylesheet" href="ui.css">
-</head>
-<body>
-  <main class="page-shell">
-    <header class="page-header">
-      <div>
-        <p class="eyebrow">FIRST RUN / OLLAMA ONLY</p>
-        <h1>优诺本地翻译插件<span class="brand-dot">。</span></h1>
-        <p class="lede">只使用本机 Ollama/Qwen。翻译当前屏幕，滚动时继续翻译新显示的文字。</p>
-      </div>
-      <span class="edition">EDITION 0.3</span>
-    </header>
-
-    <section class="panel">
-      <h2>连接本机服务</h2>
-      <p class="panel-copy">先运行 <code>host\start.ps1</code>，然后从 <code>host\config.json</code> 复制访问令牌。</p>
-      <div class="form-grid">
-        <label class="field"><span>服务地址</span><input id="hostUrl" value="http://127.0.0.1:8765"></label>
-        <label class="field"><span>访问令牌</span><input id="token" type="password" autocomplete="off" placeholder="粘贴 token"></label>
-      </div>
-      <div class="actions"><button id="checkHost" class="primary">检查连接</button></div>
-      <div id="checks" class="check-list"></div>
-    </section>
-
-    <section class="panel">
-      <h2>完成</h2>
-      <p class="panel-copy">至少安装一个模型：<code>qwen2.5:3b</code> 或 <code>qwen3:1.7b</code>。</p>
-      <div class="actions">
-        <button id="finish" class="primary" disabled>完成设置</button>
-        <button id="openSettings" class="secondary">打开详细设置</button>
-      </div>
-    </section>
-  </main>
-  <script src="setup.js"></script>
-</body>
-</html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>优诺翻译 · 首次运行</title><link rel="stylesheet" href="ui.css"></head>
+<body><main class="page-shell">
+  <header class="page-header"><p class="eyebrow">YOUNUO / FIRST RUN</p><h1>连接本机翻译</h1><p class="lede">优诺通过本机 Ollama 和 Qwen 翻译网页文字。</p></header>
+  <section class="panel"><h2>本机服务</h2><p class="panel-copy">先运行 <code>host\start.ps1</code>，再从 <code>host\config.json</code> 复制访问令牌。</p><div class="form-grid"><label class="field"><span>服务地址</span><input id="hostUrl" value="http://127.0.0.1:8765"></label><label class="field"><span>访问令牌</span><input id="token" type="password" autocomplete="off" placeholder="粘贴 token"></label></div><div class="actions"><button id="checkHost" class="primary">检查连接</button></div><div id="checks" class="check-list"></div></section>
+  <section class="panel"><h2>完成设置</h2><p class="panel-copy">请至少安装一个模型：<code>qwen2.5:3b</code> 或 <code>qwen3:1.7b</code>。</p><div class="actions"><button id="finish" class="primary" disabled>完成设置</button><button id="openSettings" class="secondary">打开设置</button></div></section>
+</main><script src="setup.js"></script></body></html>
