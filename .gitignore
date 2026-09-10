@@ -1,0 +1,17 @@
+# Local secrets and runtime state
+host/config.json
+host/host.log
+*.log
+
+# Python
+host/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build output and editor files
+dist/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

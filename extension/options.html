@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>优诺本地翻译插件 · 设置</title>
+  <link rel="stylesheet" href="ui.css">
+  <link rel="stylesheet" href="ui-compact.css">
+</head>
+<body class="options-body">
+  <main class="page-shell">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">SETTINGS / GLOBAL</p>
+        <h1>优诺翻译规则<span class="brand-dot">。</span></h1>
+        <p class="lede">设置对所有网页生效，只保存在这台电脑的 Edge 中。</p>
+      </div>
+      <span class="edition">LOCAL FIRST</span>
+    </header>
+
+    <section class="panel">
+      <h2>高精度模型</h2>
+      <div class="form-grid">
+        <label class="field">
+          <span>默认 Qwen 模型</span>
+          <select id="qwenModel">
+            <option value="qwen2.5:3b">Qwen2.5 3B</option>
+            <option value="qwen3:1.7b">Qwen3 1.7B</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>固定译法</h2>
+      <p class="panel-copy">命中原文时优先采用指定译文。</p>
+      <table class="table">
+        <thead><tr><th>原词</th><th>固定译文</th><th></th></tr></thead>
+        <tbody id="fixedRows"></tbody>
+      </table>
+      <div class="actions"><button id="addFixed" class="secondary">＋ 添加固定译法</button></div>
+    </section>
+
+    <section class="panel">
+      <h2>禁止翻译词</h2>
+      <p class="panel-copy">品牌、变量和专有名词尽量原样保留，每行一个。</p>
+      <label class="field full"><textarea id="protectedTerms" rows="6" placeholder="OpenAI&#10;TypeScript&#10;YouNuo"></textarea></label>
+      <div class="actions">
+        <button id="save" class="primary">保存设置</button>
+        <button id="export" class="secondary">导出 JSON</button>
+        <label class="secondary" style="cursor:pointer">导入 JSON<input id="import" type="file" accept=".json" hidden></label>
+      </div>
+      <p id="saveStatus" class="panel-copy"></p>
+    </section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

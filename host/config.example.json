@@ -1,0 +1,5 @@
+{
+  "token": "replace-with-a-long-random-token",
+  "port": 8765,
+  "ollama_url": "http://127.0.0.1:11434"
+}

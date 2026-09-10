@@ -1,0 +1,140 @@
+/* 0.4.1 compact popup */
+.popup-body {
+  width: 348px;
+  min-height: 488px;
+}
+
+.popup-shell { min-height: 488px; }
+
+.mascot-hero {
+  height: 120px;
+  padding: 18px 20px;
+  background-position: 72% 72%;
+}
+
+.hero-copy { width: 165px; }
+.eyebrow { margin-bottom: 6px; font-size: 8px; }
+.mascot-hero h1 { font-size: 32px; }
+.hero-note { margin-top: 6px; font-size: 9px; }
+.hero-settings { top: 12px; right: 12px; }
+.version-chip { right: 12px; bottom: 9px; }
+
+.control-stack { padding: 13px 18px 0; }
+.section-heading { margin-bottom: 6px; }
+.section-heading:not(:first-child) { margin-top: 11px; }
+.compact-heading { margin-top: 10px !important; }
+
+.direction-card {
+  padding: 8px 10px 9px;
+  border-radius: 10px;
+}
+
+select { padding: 5px 4px; font-size: 12px; }
+
+.translate-cta {
+  min-height: 60px;
+  padding: 8px 11px;
+  border-radius: 11px;
+}
+
+.translate-cta.is-translating {
+  color: #fff6e9;
+  border-color: #35141f;
+  background:
+    radial-gradient(circle at 92% 15%, rgba(239,127,163,.16), transparent 32%),
+    linear-gradient(125deg, #1d0b12, #37131f);
+  box-shadow: inset 0 0 0 1px rgba(244,217,137,.12), 0 7px 18px rgba(48,23,33,.28);
+  transform: translateY(1px);
+  cursor: wait;
+}
+
+.translate-cta.is-translating .cta-glyph {
+  animation: translating-breathe .9s ease-in-out infinite alternate;
+}
+
+.translate-cta:disabled { opacity: 1; }
+.cta-copy strong { font-size: 14px; }
+.cta-copy small { font-size: 9px; }
+
+.segmented button { padding: 6px; font-size: 11px; }
+
+.status {
+  margin: 11px 18px 0;
+  padding: 9px 0 11px;
+}
+
+@keyframes translating-breathe {
+  from { color: var(--gold-light); box-shadow: 0 0 0 rgba(239,127,163,0); }
+  to { color: #fff; box-shadow: 0 0 14px rgba(239,127,163,.5); }
+}
+
+/* Settings: full-screen mascot artwork with glass controls */
+body.options-body {
+  min-height: 100vh;
+  color: #fff8ec;
+  background:
+    linear-gradient(90deg, rgba(25,8,15,.94) 0%, rgba(42,15,27,.78) 46%, rgba(42,15,27,.34) 100%),
+    url("assets/mascot-banner.webp") 72% center / cover fixed no-repeat,
+    #2e1520;
+}
+
+.options-body .page-shell {
+  width: min(720px, calc(100% - 44px));
+  margin: 0 0 0 clamp(22px, 6vw, 100px);
+  padding: 34px 0 70px;
+}
+
+.options-body .page-header {
+  min-height: auto;
+  padding: 24px 26px;
+  border: 1px solid rgba(244,217,137,.28);
+  border-radius: 16px;
+  color: #fff8ec;
+  background: rgba(35,10,20,.62);
+  box-shadow: 0 18px 50px rgba(8,2,5,.3);
+  backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.options-body .page-header h1 { font-size: 34px; }
+.options-body .page-header .lede { color: rgba(255,248,236,.68); }
+.options-body .edition { position: static; display: block; margin-top: 14px; }
+
+.options-body .panel {
+  margin-top: 14px;
+  padding: 19px 22px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 14px;
+  color: #fff8ec;
+  background: rgba(38,12,22,.67);
+  box-shadow: 0 14px 42px rgba(9,2,5,.22);
+  backdrop-filter: blur(18px) saturate(1.1);
+}
+
+.options-body .panel h2 { color: var(--gold-light); font-size: 20px; }
+.options-body .panel-copy { color: rgba(255,248,236,.63); }
+.options-body .field { color: rgba(255,248,236,.82); }
+
+.options-body .field input,
+.options-body .field textarea,
+.options-body .field select,
+.options-body .table input {
+  color: #fffaf1;
+  border-color: rgba(255,255,255,.16);
+  background: rgba(255,255,255,.08);
+}
+
+.options-body select option { color: #25121a; background: #fff9ef; }
+.options-body .table th { color: rgba(244,217,137,.72); }
+.options-body .table th,
+.options-body .table td { border-color: rgba(255,255,255,.12); }
+.options-body .primary { color: #32131f; border-color: var(--gold-light); background: var(--gold-light); }
+.options-body .secondary { color: #fff8ec; border-color: rgba(255,255,255,.42); }
+.options-body .danger { color: #ffadc2; border-color: rgba(255,173,194,.6); }
+.options-body #saveStatus { color: var(--gold-light); }
+
+@media (max-width: 760px) {
+  .options-body .page-shell {
+    width: calc(100% - 28px);
+    margin: 0 auto;
+  }
+}
