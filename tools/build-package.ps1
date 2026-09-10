@@ -21,7 +21,7 @@ New-Item -ItemType Directory -Path $DistRoot -Force | Out-Null
 
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "extension") -Destination $PackageRoot -Recurse
 Get-ChildItem -LiteralPath (Join-Path $ProjectRoot "host") -File |
-    Where-Object { $_.Name -ne "config.json" } |
+    Where-Object { $_.Name -ne "config.json" -and $_.Extension -ne ".log" } |
     Copy-Item -Destination $PackageHost
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "tools") -Destination $PackageRoot -Recurse
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "README.md") -Destination $PackageRoot
