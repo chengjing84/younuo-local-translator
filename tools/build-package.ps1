@@ -25,7 +25,6 @@ Get-ChildItem -LiteralPath (Join-Path $ProjectRoot "host") -File |
     Copy-Item -Destination $PackageHost
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "tools") -Destination $PackageRoot -Recurse
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "README.md") -Destination $PackageRoot
-Copy-Item -LiteralPath (Join-Path $ProjectRoot "HANDOFF.md") -Destination $PackageRoot
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "install.cmd") -Destination $PackageRoot
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "uninstall.cmd") -Destination $PackageRoot
 Copy-Item -LiteralPath (Join-Path $ProjectRoot "start-host.cmd") -Destination $PackageRoot
