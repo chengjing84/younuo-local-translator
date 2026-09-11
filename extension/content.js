@@ -107,6 +107,7 @@
   }
 
   function reportActivity(status) {
+    if (window.top !== window) return;
     chrome.runtime.sendMessage({ type: "UPDATE_TRANSLATION_STATUS", status, count: translatedCount }).catch(() => {});
   }
 
