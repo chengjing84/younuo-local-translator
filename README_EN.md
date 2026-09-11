@@ -4,9 +4,21 @@ An open-source Edge extension powered by local Ollama models. Start once per sit
 
 [中文说明](README.md) · [Author: ANNO_YOO杏野](https://space.bilibili.com/13412148) · [GitHub](https://github.com/chengjing84/younuo-local-translator)
 
+## Model trade-offs
+
+| Model      | Strength / limitation                                                                     | Sample mean | Install                  |
+| ---------- | ----------------------------------------------------------------------------------------- | ----------- | ------------------------ |
+| Qwen3.5 9B | Quality first; largest memory footprint and longest waits                                 | 2.12 s      | `ollama pull qwen3.5:9b` |
+| Qwen2.5 3B | Faster and smaller; samples included untranslated words and answering source instructions | 0.67 s      | `ollama pull qwen2.5:3b` |
+| Qwen3 1.7B | Smallest, experimental; a sample reversed before/after meaning                            | 0.43 s      | `ollama pull qwen3:1.7b` |
+
+These are eight short samples per model, not a hardware or full-page benchmark. NSFW translation has not been validated for any of these official tags; no support claim is made. The default is unchanged.
+
+See the detailed Chinese [model guide](docs/MODELS.md) and [installation, usage and troubleshooting tutorial](docs/USAGE.md). They include disk/RAM/VRAM planning, exact commands, connection ports, switching models and upgrades.
+
 ## Setup
 
-Requires Windows 10/11, Microsoft Edge, Python 3.10+, and Ollama. Node.js is only needed for development.
+Requires Windows 10 22H2+ / 11, Microsoft Edge, Python 3.10+, and Ollama. Node.js is only needed for development.
 
 1. Start Ollama and run `ollama pull qwen3.5:9b`. Qwen2.5 3B is also supported; Qwen3 1.7B remains experimental.
 2. Run `install.cmd`. It creates a Python environment, checks the local service, and enables startup for the current Windows user after successful validation.
@@ -46,4 +58,4 @@ See [validation](docs/VALIDATION.md), [contributing](CONTRIBUTING.md) and [chang
 
 ## License
 
-MIT. Copyright 2026 ANNO_YOO杏野. Ollama and model licenses are separate. [Follow the author on Bilibili](https://space.bilibili.com/13412148).
+MIT. Copyright 2026 ANNO_YOO杏野. Ollama and model licenses are separate. Qwen2.5 3B uses the Qwen Research License, not MIT; see the linked model guide. [Follow the author on Bilibili](https://space.bilibili.com/13412148).

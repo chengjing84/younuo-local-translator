@@ -8,9 +8,24 @@
 
 ![优诺翻译弹窗](docs/images/popup.png)
 
+## 模型选择与教程
+
+| 模型       | 怎么选                                     | 本次短句平均耗时 | 安装命令                 |
+| ---------- | ------------------------------------------ | ---------------- | ------------------------ |
+| Qwen3.5 9B | 质量优先，占用和等待更多                   | 2.12 秒          | `ollama pull qwen3.5:9b` |
+| Qwen2.5 3B | 速度与占用折中，可能漏译或回答原文中的问题 | 0.67 秒          | `ollama pull qwen2.5:3b` |
+| Qwen3 1.7B | 轻量试验，出现过先后顺序翻反               | 0.43 秒          | `ollama pull qwen3:1.7b` |
+
+每个模型仅测了 8 条短句，不能代表你的电脑或整页速度。9B 不代表不会误译，小模型也不能只看速度。
+
+- [三个模型的优缺点、下载体积、硬件建议与 NSFW 说明](docs/MODELS.md)
+- [详细教程：环境准备 → 安装连接 → 阅读设置 → 排错与升级](docs/USAGE.md)
+
+三个官方模型均未验证 NSFW 翻译稳定性，暂不标注支持。当前默认模型不变。
+
 ## 快速开始
 
-环境：Windows 10/11、Microsoft Edge、Python 3.10+、Ollama。使用插件无需 Node.js；它仅用于开发测试。
+环境：Windows 10 22H2+/11、Microsoft Edge、Python 3.10+、Ollama。使用插件无需 Node.js；它仅用于开发测试。
 
 1. 安装并启动 Ollama，下载模型：
 
@@ -18,7 +33,7 @@
    ollama pull qwen3.5:9b
    ```
 
-   推荐 Qwen3.5 9B；也支持已有的 `qwen2.5:3b`。`qwen3:1.7b` 保留为试验选项，可能存在明显的语义错误。
+   质量优先可选 Qwen3.5 9B；更关注速度可评估 `qwen2.5:3b`。`qwen3:1.7b` 保留为试验选项，可能存在明显的语义错误。
 
 2. 解压发布包，双击 `install.cmd`。安装器检查 Python、创建虚拟环境、启动服务，成功后设置当前用户登录自启。后台仅依赖 Python 标准库，无付费 API。
 3. 打开 `edge://extensions`，启用开发人员模式，加载本项目的 **extension** 文件夹。
@@ -83,6 +98,6 @@ Windows 可使用已有 Edge：运行测试前设置 `$env:EDGE_PATH = 'C:\Progr
 
 作者：[ANNO_YOO杏野](https://space.bilibili.com/13412148)。欢迎在 B 站分享体验，在 GitHub 提交可复现的问题。
 
-代码采用 [MIT](LICENSE) 许可证；Ollama 与模型的许可由各自项目提供。开源不代表对所有网站和模型输出作出准确性保证。
+代码采用 [MIT](LICENSE) 许可证；Ollama 与模型的许可由各自项目提供，尤其 Qwen2.5 3B 使用 Qwen Research License，并非 MIT；详见 [模型许可](docs/MODELS.md#模型许可)。开源不代表对所有网站和模型输出作出准确性保证。
 
 若默认端口冲突，可修改 host/config.json 的 port，并在连接页填写对应的本机地址。后台启动已不再依赖 VBS。

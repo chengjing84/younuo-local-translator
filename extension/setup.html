@@ -25,14 +25,42 @@
           <div>
             <h2>启动服务与模型</h2>
             <p class="panel-copy">
-              首次运行 install.cmd，之后使用 start-host.cmd。推荐 Qwen3.5
-              9B，也支持已有的 Qwen2.5 3B。
+              首次运行 install.cmd，之后使用
+              start-host.cmd。按速度与质量需求选择一个模型即可。
             </p>
           </div>
         </div>
         <div class="command-box">
-          <span>POWER SHELL</span><code>ollama pull qwen3.5:9b</code>
+          <span>9B · 质量优先，显存占用和等待更多</span
+          ><code>ollama pull qwen3.5:9b</code>
         </div>
+        <div class="command-box">
+          <span>3B · 速度折中，注意漏译</span
+          ><code>ollama pull qwen2.5:3b</code>
+        </div>
+        <div class="command-box">
+          <span>1.7B · 轻量试验，注意语义反转</span
+          ><code>ollama pull qwen3:1.7b</code>
+        </div>
+        <p class="panel-copy">
+          Windows 10 22H2+/11、Python 3.10+ 和运行中的
+          Ollama。模型只需装一个，三个均未验证 NSFW 翻译支持。
+        </p>
+        <p class="panel-copy">
+          <a
+            href="https://github.com/chengjing84/younuo-local-translator/blob/main/docs/USAGE.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            >完整安装与使用教程 ↗</a
+          >
+          ·
+          <a
+            href="https://github.com/chengjing84/younuo-local-translator/blob/main/docs/MODELS.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            >模型利弊与配置建议 ↗</a
+          >
+        </p>
       </section>
       <section class="panel">
         <div class="section-heading">
