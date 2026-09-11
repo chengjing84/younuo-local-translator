@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "优诺本地翻译插件",
   "description": "使用本机 Ollama/Qwen 在 Edge 中原位翻译网页。",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "permissions": ["activeTab", "storage", "scripting"],
   "host_permissions": ["http://127.0.0.1:8765/*"],
   "background": { "service_worker": "background.js" },

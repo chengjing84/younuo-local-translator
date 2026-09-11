@@ -57,3 +57,13 @@
   background: transparent !important;
   cursor: pointer !important;
 }
+
+.younuo-bilingual-translation {
+  display: inline !important;
+  margin-left: .32em !important;
+  padding: .08em .34em !important;
+  border-radius: .28em !important;
+  color: #a95471 !important;
+  background: rgba(255, 226, 235, .78) !important;
+  font: inherit !important;
+}

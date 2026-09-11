@@ -11,7 +11,8 @@
   let translateQueue = Promise.resolve();
   let observer = null;
   let scrollTimer = null;
-  let showingTranslations = true;
+  let displayMode = "translation";
+  let translatedCount = 0;
   let toolbar = null;
   let card = null;
 
@@ -33,7 +34,7 @@
     const element = parentElement(node);
     if (!element || !node.nodeValue?.trim()) return false;
     if (SKIP_TAGS.has(element.tagName)) return false;
-    if (element.closest("[contenteditable='true'], .younuo-toolbar, .younuo-selection-card")) return false;
+    if (element.closest("[contenteditable='true'], .younuo-toolbar, .younuo-selection-card, .younuo-bilingual-translation")) return false;
     if (!node.isConnected) return false;
     const text = node.nodeValue.replace(/\s+/g, " ").trim();
     if (text.length < 2 || text.length > 1200) return false;
@@ -60,7 +61,8 @@
         originalText: node.nodeValue,
         normalizedText: node.nodeValue.replace(/\s+/g, " ").trim(),
         translations: new Map(),
-        showing: "original"
+        showing: "original",
+        bilingualNode: null
       };
       records.set(node, record);
     }
@@ -104,9 +106,14 @@
     });
   }
 
+  function reportActivity(status) {
+    chrome.runtime.sendMessage({ type: "UPDATE_TRANSLATION_STATUS", status, count: translatedCount }).catch(() => {});
+  }
+
   async function settings() {
     return chrome.storage.local.get({
       qwenModel: "qwen2.5:3b",
+      displayMode: "translation",
       glossary: { fixed: [], protected: [] }
     });
   }
@@ -117,11 +124,37 @@
     return `${leading}${translated.trim()}${trailing}`;
   }
 
+  function removeBilingual(record) {
+    record.bilingualNode?.remove();
+    record.bilingualNode = null;
+  }
+
+  function renderRecord(node, record, key) {
+    removeBilingual(record);
+    const translation = record.translations.get(key);
+    if (!translation || displayMode === "original") {
+      node.nodeValue = record.originalText;
+      record.showing = "original";
+      return;
+    }
+    if (displayMode === "bilingual") {
+      node.nodeValue = record.originalText;
+      const bilingual = document.createElement("span");
+      bilingual.className = "younuo-bilingual-translation";
+      bilingual.textContent = `〔译：${translation}〕`;
+      node.after(bilingual);
+      record.bilingualNode = bilingual;
+      record.showing = "bilingual";
+      return;
+    }
+    node.nodeValue = preserveWhitespace(record.originalText, translation);
+    record.showing = "translation";
+  }
+
   function applyTranslation(block, translation, key) {
     block.record.translations.set(key, translation);
-    if (!showingTranslations || !block.node.isConnected) return;
-    block.node.nodeValue = preserveWhitespace(block.record.originalText, translation);
-    block.record.showing = "translation";
+    if (!block.node.isConnected) return;
+    renderRecord(block.node, block.record, key);
   }
 
   function showOriginals() {
@@ -129,19 +162,23 @@
     observer?.disconnect();
     observer = null;
     clearTimeout(scrollTimer);
-    showingTranslations = false;
+    reportActivity("idle");
+    displayMode = "original";
     for (const [node, record] of records) {
       if (!node.isConnected) {
         records.delete(node);
-      } else if (record.showing !== "original") {
-        node.nodeValue = record.originalText;
-        record.showing = "original";
+      } else {
+        removeBilingual(record);
+        if (record.showing !== "original") {
+          node.nodeValue = record.originalText;
+          record.showing = "original";
+        }
       }
     }
   }
 
   function showCurrentTranslations() {
-    showingTranslations = true;
+    displayMode = "translation";
     if (!activeSession) return;
     const key = sessionKey(activeSession);
     for (const [node, record] of records) {
@@ -149,11 +186,17 @@
         records.delete(node);
         continue;
       }
-      const translation = record.translations.get(key);
-      if (translation) {
-        node.nodeValue = preserveWhitespace(record.originalText, translation);
-        record.showing = "translation";
-      }
+      if (record.translations.get(key)) renderRecord(node, record, key);
+    }
+  }
+
+  function showBilingualTranslations() {
+    displayMode = "bilingual";
+    if (!activeSession) return;
+    const key = sessionKey(activeSession);
+    for (const [node, record] of records) {
+      if (!node.isConnected) { records.delete(node); continue; }
+      if (record.translations.get(key)) renderRecord(node, record, key);
     }
   }
 
@@ -162,6 +205,7 @@
     const session = { ...activeSession };
     const key = sessionKey(session);
     const stored = await settings();
+    reportActivity("working");
     let completed = 0;
     for (let index = 0; index < blocks.length; index += 4) {
       if (!activeSession || sessionKey(activeSession) !== key) break;
@@ -179,22 +223,29 @@
         if (block?.node.isConnected && translation) {
           applyTranslation(block, translation, key);
           completed++;
+          translatedCount++;
         }
       });
     }
+    reportActivity("complete");
     return completed;
   }
 
   function enqueue(blocks) {
     const unique = [...new Map(blocks.map(block => [block.node, block])).values()];
-    translateQueue = translateQueue.catch(() => {}).then(() => translateBlocks(unique));
+    translateQueue = translateQueue.catch(() => {}).then(() => translateBlocks(unique)).catch(error => {
+      reportActivity("error");
+      throw error;
+    });
     return translateQueue;
   }
 
   function scheduleVisibleTranslation() {
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => {
-      if (activeSession) enqueue(untranslatedVisible());
+      if (!activeSession) return;
+      const blocks = untranslatedVisible();
+      if (blocks.length) enqueue(blocks).catch(() => {});
     }, 180);
   }
 
@@ -218,9 +269,13 @@
       target: message.target,
       model: message.model
     };
-    showingTranslations = true;
+    const stored = await settings();
+    displayMode = stored.displayMode || "translation";
+    translatedCount = 0;
+    reportActivity("working");
     const count = await enqueue(untranslatedVisible());
     startContinuation();
+    reportActivity("complete");
     return count;
   }
 
@@ -320,6 +375,11 @@
     }
     if (message.type === "SHOW_TRANSLATION") {
       showCurrentTranslations();
+      sendResponse({ ok: true });
+      return;
+    }
+    if (message.type === "SHOW_BILINGUAL") {
+      showBilingualTranslations();
       sendResponse({ ok: true });
       return;
     }
