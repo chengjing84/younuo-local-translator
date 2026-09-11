@@ -1,7 +1,97 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>优诺翻译 · 首次运行</title><link rel="stylesheet" href="ui.css"></head>
-<body><main class="page-shell">
-  <header class="page-header"><p class="eyebrow">YOUNUO / FIRST RUN</p><h1>连接本机翻译</h1><p class="lede">优诺通过本机 Ollama 和 Qwen 翻译网页文字。</p></header>
-  <section class="panel"><h2>本机服务</h2><p class="panel-copy">先运行 <code>host\start.ps1</code>，再从 <code>host\config.json</code> 复制访问令牌。</p><div class="form-grid"><label class="field"><span>服务地址</span><input id="hostUrl" value="http://127.0.0.1:8765"></label><label class="field"><span>访问令牌</span><input id="token" type="password" autocomplete="off" placeholder="粘贴 token"></label></div><div class="actions"><button id="checkHost" class="primary">检查连接</button></div><div id="checks" class="check-list"></div></section>
-  <section class="panel"><h2>完成设置</h2><p class="panel-copy">请至少安装一个模型：<code>qwen2.5:3b</code> 或 <code>qwen3:1.7b</code>。</p><div class="actions"><button id="finish" class="primary" disabled>完成设置</button><button id="openSettings" class="secondary">打开设置</button></div></section>
-</main><script src="setup.js"></script></body></html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>连接本机 · 优诺</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <nav class="page-nav">
+        <a class="wordmark" href="options.html">优诺 <span>YOUNUO</span></a
+        ><span class="local-pill">LOCAL FIRST</span>
+      </nav>
+      <header class="page-header">
+        <p class="eyebrow">01 / CONNECT</p>
+        <h1>连接一次，<br />随时读懂。</h1>
+        <p class="lede">
+          网页 → 优诺本机服务 → Ollama。<br />没有云端翻译 API，没有账号和额度。
+        </p>
+      </header>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h2>启动服务与模型</h2>
+            <p class="panel-copy">
+              首次运行 install.cmd，之后使用 start-host.cmd。推荐 Qwen3.5
+              9B，也支持已有的 Qwen2.5 3B。
+            </p>
+          </div>
+        </div>
+        <div class="command-box">
+          <span>POWER SHELL</span><code>ollama pull qwen3.5:9b</code>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h2>连接你的电脑</h2>
+            <p class="panel-copy">
+              从 host/config.json 复制 token。地址中的端口需与配置中的 port
+              一致。
+            </p>
+          </div>
+        </div>
+        <label class="field"
+          ><span>本机服务地址</span
+          ><input id="hostUrl" value="http://127.0.0.1:8765" spellcheck="false"
+        /></label>
+        <label class="field" style="margin-top: 14px"
+          ><span>本机访问令牌</span
+          ><input
+            id="token"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="粘贴 token"
+        /></label>
+        <div class="actions">
+          <button id="checkHost" class="primary">检查连接 ↗</button>
+        </div>
+        <div id="checks" class="check-list" aria-live="polite"></div>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="section-number">03</span>
+          <div>
+            <h2>准备开始阅读</h2>
+            <p class="panel-copy">连接检查会列出已安装的模型。</p>
+          </div>
+        </div>
+        <label class="field"
+          ><span>默认模型</span
+          ><select id="qwenModel" aria-label="默认模型"></select
+        ></label>
+        <div class="actions">
+          <button id="finish" class="primary" disabled>
+            保存连接，开始使用</button
+          ><button id="openSettings" class="secondary">翻译设置</button>
+        </div>
+      </section>
+      <footer class="page-footer">
+        <span>优诺 · 免费开源的本地翻译工具</span
+        ><a
+          href="https://space.bilibili.com/13412148"
+          target="_blank"
+          rel="noopener noreferrer"
+          >ANNO_YOO杏野 ↗</a
+        >
+      </footer>
+    </main>
+    <script src="settings.js"></script>
+    <script src="setup.js"></script>
+  </body>
+</html>

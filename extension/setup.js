@@ -1,67 +1,116 @@
-const $ = selector => document.querySelector(selector);
-let connected = false;
-
-function checkRow(label, detail, state = "") {
-  const row = document.createElement("div");
-  row.className = `check-row ${state}`;
-  row.innerHTML = `<span class="check-mark"></span><strong></strong><span class="check-detail"></span>`;
-  row.children[1].textContent = label;
-  row.children[2].textContent = detail;
-  return row;
+const $ = (s) => document.querySelector(s);
+let verified = null;
+function invalidate() {
+  verified = null;
+  $("#finish").disabled = true;
 }
-
-async function request(path) {
-  const hostUrl = $("#hostUrl").value.replace(/\/$/, "");
+function row(label, detail, state = "") {
+  const el = document.createElement("div");
+  el.className = `check-row ${state}`;
+  const dot = document.createElement("span"),
+    name = document.createElement("strong"),
+    value = document.createElement("span");
+  dot.className = "check-mark";
+  name.textContent = label;
+  value.className = "check-detail";
+  value.textContent = detail;
+  el.append(dot, name, value);
+  return el;
+}
+$("#token").oninput = invalidate;
+$("#hostUrl").oninput = invalidate;
+$("#checkHost").onclick = async () => {
+  invalidate();
+  $("#checkHost").disabled = true;
   const token = $("#token").value.trim();
-  const response = await fetch(hostUrl + path, {
-    headers: { "X-Page-Translator-Token": token }
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
-  return data;
-}
-
-async function checkHost() {
-  const checks = $("#checks");
-  checks.replaceChildren(checkRow("本机服务", "正在检查…"));
+  const hostUrl = $("#hostUrl").value.trim().replace(/\/$/, "");
+  $("#checks").replaceChildren(row("本机服务", "正在检查…"));
   try {
-    const data = await request("/health");
-    connected = true;
-    await chrome.storage.local.set({
-      hostUrl: $("#hostUrl").value.replace(/\/$/, ""),
-      token: $("#token").value.trim()
+    if (token.length < 16)
+      throw new Error("请粘贴 host/config.json 中的完整 token");
+    const host = new URL(hostUrl);
+    if (
+      host.protocol !== "http:" ||
+      host.hostname !== "127.0.0.1" ||
+      host.username ||
+      host.password ||
+      host.pathname !== "/" ||
+      host.search ||
+      host.hash
+    )
+      throw new Error("仅支持 http://127.0.0.1:端口");
+    const response = await fetch(hostUrl + "/health", {
+      headers: { "X-Page-Translator-Token": token },
+      signal: AbortSignal.timeout(5000),
+      redirect: "error",
     });
-    checks.replaceChildren(checkRow("本机服务", `版本 ${data.version}`, "ok"));
-    checks.append(checkRow(
-      "Ollama",
-      data.ollamaError || `${data.ollamaModels.length} 个模型`,
-      data.ollamaError ? "error" : "ok"
-    ));
-    for (const model of ["qwen2.5:3b", "qwen3:1.7b"]) {
-      const found = data.ollamaModels.some(name => name === model || name.startsWith(`${model}-`));
-      checks.append(checkRow(model, found ? "已安装" : "尚未安装", found ? "ok" : "warn"));
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "连接失败");
+    if (data.protocolVersion !== 1)
+      throw new Error("后台版本过旧，请停止旧服务并运行新版 start-host.cmd");
+    if (
+      token !== $("#token").value.trim() ||
+      hostUrl !== $("#hostUrl").value.trim().replace(/\/$/, "")
+    )
+      return;
+    const installed = YounuoSettings.models.filter((m) =>
+      data.ollamaModels?.includes(m),
+    );
+    $("#checks").replaceChildren(
+      row("本机服务", `v${data.version}`, "ok"),
+      row(
+        "Ollama",
+        data.ollamaError || "已连接",
+        data.ollamaError ? "error" : "ok",
+      ),
+    );
+    const select = $("#qwenModel");
+    select.replaceChildren();
+    for (const model of installed) {
+      const o = document.createElement("option");
+      o.value = model;
+      o.textContent = YounuoSettings.modelLabel(model);
+      select.append(o);
     }
-    $("#finish").disabled = Boolean(data.ollamaError);
+    if (!installed.length) {
+      $("#checks").append(
+        row("翻译模型", "未找到支持的模型，请先下载", "error"),
+      );
+      return;
+    }
+    $("#checks").append(row("翻译模型", `${installed.length} 个可用`, "ok"));
+    verified = data.ollamaError ? null : { token, hostUrl };
+    $("#finish").disabled = !verified;
   } catch (error) {
-    connected = false;
-    checks.replaceChildren(checkRow("本机服务", error.message, "error"));
-    $("#finish").disabled = true;
+    $("#checks").replaceChildren(
+      row(
+        "连接未完成",
+        error.name === "TimeoutError"
+          ? "连接超时，请启动本机服务"
+          : error.message,
+        "error",
+      ),
+    );
+  } finally {
+    $("#checkHost").disabled = false;
   }
-}
-
-$("#checkHost").addEventListener("click", checkHost);
-$("#finish").addEventListener("click", async () => {
-  if (!connected) return;
-  await chrome.storage.local.set({ setupComplete: true });
-  window.close();
-});
-$("#openSettings").addEventListener("click", () => chrome.runtime.openOptionsPage());
-
-chrome.storage.local.get({
-  hostUrl: "http://127.0.0.1:8765",
-  token: ""
-}).then(settings => {
-  $("#hostUrl").value = settings.hostUrl;
-  $("#token").value = settings.token;
-  if (settings.token) checkHost();
-});
+};
+$("#finish").onclick = async () => {
+  if (!verified || verified.token !== $("#token").value.trim()) return;
+  await chrome.storage.local.set({
+    hostUrl: verified.hostUrl,
+    token: verified.token,
+    qwenModel: $("#qwenModel").value,
+    setupComplete: true,
+  });
+  $("#finish").textContent = "已连接，可以回到网页开始翻译";
+  $("#finish").disabled = true;
+};
+$("#openSettings").onclick = () => chrome.runtime.openOptionsPage();
+chrome.storage.local
+  .get({ token: "", hostUrl: "http://127.0.0.1:8765" })
+  .then((s) => {
+    $("#token").value = s.token;
+    $("#hostUrl").value = s.hostUrl;
+    if (s.token) $("#checkHost").click();
+  });

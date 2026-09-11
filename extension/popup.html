@@ -1,13 +1,88 @@
 <!doctype html>
 <html lang="zh-CN">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>优诺本地翻译插件</title><link rel="stylesheet" href="ui.css"></head>
-<body class="popup-body"><main class="popup-shell">
-  <header class="app-bar"><div class="brand-lockup"><span class="brand-icon"><img class="brand-mark" src="icons/icon-48.png" alt="优诺翻译图标"><span class="activity-dots" aria-label="翻译状态"><i></i><i></i><i></i></span></span><div><h1>优诺翻译</h1><p>LOCAL · OLLAMA</p></div></div><button id="openOptions" class="plain-icon" title="设置" aria-label="打开设置">设置</button></header>
-  <section class="workspace" aria-label="翻译控制台">
-    <div class="field-label"><span>语言方向</span><span class="field-hint">自动检测可用</span></div>
-    <div class="language-row"><label><span class="sr-only">原文语言</span><select id="sourceLanguage"><option value="auto">自动检测</option><option value="en">英语</option><option value="zh">简体中文</option><option value="ja">日语</option><option value="ko">韩语</option></select></label><span class="direction-arrow" aria-hidden="true">→</span><label><span class="sr-only">译文语言</span><select id="targetLanguage"><option value="zh">简体中文</option><option value="en">英语</option><option value="ja">日语</option><option value="ko">韩语</option></select></label></div>
-    <button id="translatePage" class="translate-cta"><span class="cta-copy"><strong>开始自动翻译</strong><small id="modelCaption">Qwen2.5 3B · 跟随页面变化</small></span><span class="cta-arrow" aria-hidden="true">→</span></button>
-    <div class="reading-row"><span>阅读显示</span><div class="segmented" role="group" aria-label="阅读显示"><button id="showOriginal">原文</button><button id="showTranslation" class="active">译文</button><button id="showBilingual">对照</button></div></div>
-  </section>
-  <footer id="status" class="status" aria-live="polite"><span class="status-light"></span><span>准备就绪</span><span class="status-tail">本机运行</span></footer>
-</main><script src="popup.js"></script></body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>优诺 · 本地翻译</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="popup-body">
+    <main class="popup-shell">
+      <header class="app-bar">
+        <div class="brand-lockup">
+          <span class="brand-icon"
+            ><img class="brand-mark" src="icons/icon-48.png" alt="" /><span
+              class="activity-dots"
+              aria-hidden="true"
+              ><i></i><i></i><i></i></span
+          ></span>
+          <div>
+            <h1>优诺<span class="brand-en"> YOUNUO</span></h1>
+            <p>让阅读，回到内容本身。</p>
+          </div>
+        </div>
+        <button id="openOptions" class="plain-icon" aria-label="打开设置">
+          设置 ↗
+        </button>
+      </header>
+      <section class="workspace">
+        <div class="site-line">
+          <span class="site-symbol" aria-hidden="true">↳</span>
+          <div>
+            <strong id="siteName">当前网站</strong
+            ><small id="siteState">仅在你开启后翻译</small>
+          </div>
+          <span class="local-pill">LOCAL</span>
+        </div>
+        <div class="language-row">
+          <label
+            ><span class="field-label">原文</span
+            ><select id="sourceLanguage">
+              <option value="auto">自动检测</option>
+              <option value="en">英语</option>
+              <option value="zh">简体中文</option>
+              <option value="ja">日语</option>
+              <option value="ko">韩语</option>
+            </select></label
+          ><span class="direction-arrow" aria-hidden="true">→</span
+          ><label
+            ><span class="field-label">译为</span
+            ><select id="targetLanguage">
+              <option value="zh">简体中文</option>
+              <option value="en">英语</option>
+              <option value="ja">日语</option>
+              <option value="ko">韩语</option>
+            </select></label
+          >
+        </div>
+        <button id="translatePage" class="translate-cta">
+          <span class="cta-copy"
+            ><strong id="translateLabel">开始翻译</strong
+            ><small id="modelCaption">Qwen2.5 3B · 本机运行</small></span
+          ><span class="cta-arrow" aria-hidden="true">↗</span>
+        </button>
+        <div class="reading-row">
+          <span>阅读方式</span>
+          <div class="segmented" role="group" aria-label="阅读方式">
+            <button data-mode="original" title="停止此网站翻译并恢复原文">
+              原文</button
+            ><button data-mode="translation">译文</button
+            ><button data-mode="bilingual">对照</button>
+          </div>
+        </div>
+        <p class="microcopy">为此网站记住选择，滚动时接着翻译。</p>
+      </section>
+      <footer>
+        <div id="status" class="status" role="status">
+          <span class="status-light"></span
+          ><span id="statusText">准备就绪</span>
+        </div>
+        <div class="footer-line">
+          <span>免费 · 开源 · 本机处理</span
+          ><button id="connection" class="text-button">连接设置</button>
+        </div>
+      </footer>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,69 +1,77 @@
-.younuo-toolbar {
-  position: fixed !important;
-  z-index: 2147483646 !important;
-  display: flex !important;
-  gap: 2px !important;
-  padding: 5px !important;
-  border: 1px solid #545c51 !important;
-  border-radius: 7px !important;
-  color: #fffdf7 !important;
-  background: #1c211b !important;
-  box-shadow: 0 12px 34px rgba(0, 0, 0, .25) !important;
-  font: 12px/1.2 "Microsoft YaHei UI", sans-serif !important;
-}
-
-.younuo-toolbar button {
-  padding: 7px 9px !important;
-  border: 0 !important;
-  border-radius: 4px !important;
-  color: inherit !important;
-  background: transparent !important;
-  cursor: pointer !important;
-  font: inherit !important;
-}
-
-.younuo-toolbar button:hover {
-  color: #1c211b !important;
-  background: #f3efe4 !important;
-}
-
+.younuo-toolbar,
 .younuo-selection-card {
   position: fixed !important;
   z-index: 2147483647 !important;
-  width: min(440px, calc(100vw - 24px)) !important;
-  max-height: min(420px, calc(100vh - 24px)) !important;
-  overflow: auto !important;
-  padding: 18px !important;
-  border: 1px solid #9f9b8e !important;
+  box-sizing: border-box !important;
+  color: #233c34 !important;
+  background: #fffef9 !important;
+  border: 1px solid #dce0d5 !important;
   border-radius: 8px !important;
-  color: #1c211b !important;
-  background: #f3efe4 !important;
-  box-shadow: 0 22px 60px rgba(0, 0, 0, .28) !important;
-  font: 14px/1.7 "Microsoft YaHei UI", sans-serif !important;
+  box-shadow: 0 8px 30px #142a2226 !important;
+  font:
+    13px/1.7 "Segoe UI",
+    "Microsoft YaHei UI",
+    sans-serif !important;
+  letter-spacing: normal !important;
+  text-align: left !important;
 }
-
-.younuo-selection-card header {
+.younuo-toolbar {
   display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin-bottom: 11px !important;
-  color: #6f746b !important;
-  font-size: 11px !important;
-  letter-spacing: .08em !important;
+  gap: 4px !important;
+  padding: 5px !important;
 }
-
+.younuo-toolbar button,
 .younuo-selection-card button {
-  border: 0 !important;
+  font:
+    12px/1.4 "Segoe UI",
+    "Microsoft YaHei UI",
+    sans-serif !important;
   background: transparent !important;
+  color: #244f40 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  padding: 7px 10px !important;
   cursor: pointer !important;
 }
-
+.younuo-toolbar button:hover,
+.younuo-selection-card button:hover {
+  background: #e6edde !important;
+}
+.younuo-toolbar button:focus-visible,
+.younuo-selection-card button:focus-visible {
+  outline: 2px solid #244f40 !important;
+  outline-offset: 1px !important;
+}
+.younuo-selection-card {
+  width: min(420px, calc(100vw - 24px)) !important;
+  max-height: min(460px, calc(100vh - 24px)) !important;
+  overflow: auto !important;
+  padding: 16px !important;
+}
+.younuo-selection-card header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid #dce0d5 !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 12px !important;
+  font-size: 12px !important;
+}
+.younuo-selection-card > div {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+}
+.younuo-selection-card > button {
+  margin-top: 12px !important;
+  background: #e6edde !important;
+}
 .younuo-bilingual-translation {
   display: inline !important;
-  margin-left: .32em !important;
-  padding: .08em .34em !important;
-  border-radius: .28em !important;
-  color: #a95471 !important;
-  background: rgba(255, 226, 235, .78) !important;
+  margin-left: 0.4em !important;
+  padding: 0.08em 0.3em !important;
+  border-bottom: 1px solid #8aab7d !important;
+  color: #315b3e !important;
+  background: #edf3e5 !important;
   font: inherit !important;
+  white-space: normal !important;
 }

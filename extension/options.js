@@ -1,93 +1,150 @@
-const $ = selector => document.querySelector(selector);
+const $ = (s) => document.querySelector(s);
 let fixed = [];
-
+function notify(text, error = false) {
+  $("#saveStatus").textContent = text;
+  $("#saveStatus").classList.toggle("error", error);
+}
 function renderFixed() {
   const body = $("#fixedRows");
   body.replaceChildren();
   fixed.forEach((item, index) => {
     const row = document.createElement("tr");
-    const sourceCell = document.createElement("td");
-    const targetCell = document.createElement("td");
-    const actionCell = document.createElement("td");
-    const source = document.createElement("input");
-    const target = document.createElement("input");
-    const remove = document.createElement("button");
-    source.value = item.source;
-    target.value = item.target;
-    source.placeholder = "extension";
-    target.placeholder = "扩展";
-    remove.className = "danger";
-    remove.textContent = "删除";
-    source.addEventListener("input", () => fixed[index].source = source.value);
-    target.addEventListener("input", () => fixed[index].target = target.value);
-    remove.addEventListener("click", () => {
+    for (const key of ["source", "target"]) {
+      const td = document.createElement("td"),
+        input = document.createElement("input");
+      input.value = item[key];
+      input.maxLength = 100;
+      input.placeholder = key === "source" ? "workflow" : "工作流";
+      input.setAttribute("aria-label", key === "source" ? "原词" : "固定译文");
+      input.oninput = () => (fixed[index][key] = input.value);
+      td.append(input);
+      row.append(td);
+    }
+    const td = document.createElement("td"),
+      button = document.createElement("button");
+    button.className = "danger";
+    button.textContent = "删除";
+    button.onclick = () => {
       fixed.splice(index, 1);
       renderFixed();
-    });
-    sourceCell.append(source);
-    targetCell.append(target);
-    actionCell.append(remove);
-    row.append(sourceCell, targetCell, actionCell);
+    };
+    td.append(button);
+    row.append(td);
     body.append(row);
   });
+  $("#emptyTerms").hidden = fixed.length > 0;
 }
-
 async function save() {
-  const glossary = {
-    fixed: fixed.filter(item => item.source.trim() && item.target.trim()),
-    protected: $("#protectedTerms").value.split(/\r?\n/).map(x => x.trim()).filter(Boolean)
-  };
-  await chrome.storage.local.set({ qwenModel: $("#qwenModel").value, glossary });
-  $("#saveStatus").textContent = "已保存到本机。";
-}
-
-async function init() {
-  const settings = await chrome.storage.local.get({
-    qwenModel: "qwen2.5:3b",
-    glossary: { fixed: [], protected: [] }
+  const data = YounuoSettings.validate({
+    qwenModel: $("#qwenModel").value,
+    glossary: {
+      fixed: fixed.filter((x) => x.source.trim() || x.target.trim()),
+      protected: $("#protectedTerms")
+        .value.split(/\r?\n/)
+        .map((x) => x.trim())
+        .filter(Boolean),
+    },
   });
-  $("#qwenModel").value = settings.qwenModel;
-  fixed = settings.glossary.fixed || [];
-  $("#protectedTerms").value = (settings.glossary.protected || []).join("\n");
-  renderFixed();
+  await chrome.storage.local.set(data);
+  notify("已保存 · 正在翻译的页面会使用新设置");
+  return data;
 }
-
-$("#addFixed").addEventListener("click", () => {
+async function init() {
+  const s = await chrome.storage.local.get({
+    qwenModel: "qwen2.5:3b",
+    glossary: { fixed: [], protected: [] },
+  });
+  $("#qwenModel").value = s.qwenModel;
+  fixed = s.glossary.fixed || [];
+  $("#protectedTerms").value = (s.glossary.protected || []).join("\n");
+  renderFixed();
+  await renderSites();
+}
+async function renderSites() {
+  const { autoTranslateOrigins = {} } = await chrome.storage.local.get(
+    "autoTranslateOrigins",
+  );
+  $("#savedSites").replaceChildren();
+  for (const site of Object.keys(autoTranslateOrigins)) {
+    const row = document.createElement("div");
+    row.className = "saved-site";
+    const label = document.createElement("span"),
+      button = document.createElement("button");
+    label.textContent = site;
+    button.textContent = "停止并移除";
+    button.className = "text-button";
+    button.onclick = async () => {
+      try {
+        const r = await chrome.runtime.sendMessage({
+          type: "CLEAR_SAVED_ORIGIN",
+          origin: site,
+        });
+        if (!r.ok) throw new Error(r.error);
+        await renderSites();
+      } catch (e) {
+        notify(e.message, true);
+      }
+    };
+    row.append(label, button);
+    $("#savedSites").append(row);
+  }
+  $("#noSites").hidden = Object.keys(autoTranslateOrigins).length > 0;
+}
+$("#addFixed").onclick = () => {
   fixed.push({ source: "", target: "" });
   renderFixed();
-});
-$("#save").addEventListener("click", save);
-$("#qwenModel").addEventListener("change", save);
-
-$("#export").addEventListener("click", async () => {
-  await save();
-  const data = await chrome.storage.local.get(["qwenModel", "glossary"]);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "page-translator-settings.json";
-  link.click();
-  URL.revokeObjectURL(url);
-});
-
-$("#import").addEventListener("change", async event => {
-  const file = event.target.files[0];
-  if (!file) return;
+  $("#fixedRows tr:last-child input")?.focus();
+};
+$("#save").onclick = () => save().catch((e) => notify(e.message, true));
+$("#export").onclick = async () => {
   try {
-    const data = JSON.parse(await file.text());
-    if (!data.glossary || !Array.isArray(data.glossary.fixed) || !Array.isArray(data.glossary.protected)) {
-      throw new Error("文件格式不正确");
-    }
-    await chrome.storage.local.set({
-      qwenModel: data.qwenModel || "qwen2.5:3b",
-      glossary: data.glossary
-    });
-    await init();
-    $("#saveStatus").textContent = "导入完成。";
-  } catch (error) {
-    $("#saveStatus").textContent = `导入失败：${error.message}`;
+    const data = await save(),
+      url = URL.createObjectURL(
+        new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+      ),
+      a = document.createElement("a");
+    a.href = url;
+    a.download = "younuo-settings.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) {
+    notify(e.message, true);
   }
+};
+$("#import").onchange = async (event) => {
+  try {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 100000) throw new Error("设置文件不能超过 100 KB");
+    const data = YounuoSettings.validate(JSON.parse(await file.text()));
+    await chrome.storage.local.set(data);
+    await init();
+    notify("导入完成 · 连接令牌不会被更改");
+  } catch (e) {
+    notify("未导入：" + e.message, true);
+  } finally {
+    event.target.value = "";
+  }
+};
+$("#checkModel").onclick = async () => {
+  const b = $("#checkModel");
+  b.disabled = true;
+  $("#modelHealth").textContent = "正在检查…";
+  try {
+    const health = await YounuoSettings.request("/health");
+    if (health.ollamaError) throw new Error(health.ollamaError);
+    $("#modelHealth").textContent = health.ollamaModels.includes(
+      $("#qwenModel").value,
+    )
+      ? "所选模型已安装，可以使用"
+      : "所选模型尚未安装，请先运行 ollama pull " + $("#qwenModel").value;
+  } catch (e) {
+    $("#modelHealth").textContent = e.message;
+  } finally {
+    b.disabled = false;
+  }
+};
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.autoTranslateOrigins) renderSites();
 });
-
-init();
+init().catch((e) => notify(e.message, true));

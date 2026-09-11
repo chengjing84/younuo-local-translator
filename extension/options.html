@@ -1,8 +1,147 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>优诺翻译设置</title><link rel="stylesheet" href="ui.css"></head>
-<body class="options-body"><main class="page-shell">
-  <header class="page-header"><p class="eyebrow">YOUNUO / SETTINGS</p><h1>翻译设置</h1><p class="lede">模型和术语仅保存在当前 Edge 本机配置中。</p></header>
-  <section class="panel"><h2>默认模型</h2><p class="panel-copy">选择用于网页翻译、划词翻译与润色的本机 Qwen 模型。</p><div class="form-grid"><label class="field"><span>Qwen 模型</span><select id="qwenModel"><option value="qwen2.5:3b">Qwen2.5 3B</option><option value="qwen3:1.7b">Qwen3 1.7B</option></select></label></div></section>
-  <section class="panel"><h2>固定译法</h2><p class="panel-copy">命中原词时，优先使用指定译文。</p><table class="table"><thead><tr><th>原词</th><th>固定译文</th><th></th></tr></thead><tbody id="fixedRows"></tbody></table><div class="actions"><button id="addFixed" class="secondary">添加固定译法</button></div></section>
-  <section class="panel"><h2>不翻译的词</h2><p class="panel-copy">品牌、变量名和专有名词可保持原样，每行一个。</p><label class="field full"><textarea id="protectedTerms" rows="6" placeholder="OpenAI&#10;TypeScript&#10;YouNuo"></textarea></label><div class="actions"><button id="save" class="primary">保存设置</button><button id="export" class="secondary">导出 JSON</button><label class="secondary file-button">导入 JSON<input id="import" type="file" accept=".json" hidden></label></div><p id="saveStatus" class="save-status"></p></section>
-</main><script src="options.js"></script></body></html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>翻译设置 · 优诺</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <nav class="page-nav">
+        <a class="wordmark" href="options.html">优诺 <span>YOUNUO</span></a
+        ><a class="nav-link" href="setup.html">连接设置 ↗</a>
+      </nav>
+      <header class="page-header">
+        <p class="eyebrow">YOUR READING, YOUR RULES</p>
+        <h1>让译文，<br />更懂你的习惯。</h1>
+        <p class="lede">
+          选好模型，记住术语。剩下的交给优诺。<br />设置仅保存在当前浏览器，不同步到云端。
+        </p>
+      </header>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <h2>翻译引擎</h2>
+            <p class="panel-copy">
+              通过本机 Ollama 运行。重要内容建议使用对照模式核对。
+            </p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <label class="field"
+            ><span>默认模型</span
+            ><select id="qwenModel">
+              <option value="qwen3.5:9b">Qwen3.5 9B · 推荐</option>
+              <option value="qwen2.5:3b">Qwen2.5 3B</option>
+              <option value="qwen3:1.7b">Qwen3 1.7B · 试验</option>
+            </select></label
+          >
+          <div class="model-check">
+            <button id="checkModel" class="secondary">检查模型</button
+            ><span id="modelHealth" role="status">切换后点击底部保存</span>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div>
+            <h2>固定译法</h2>
+            <p class="panel-copy">为专业术语设定一致的表达，区分大小写。</p>
+          </div>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>原词</th>
+              <th>固定译文</th>
+              <th><span class="sr-only">操作</span></th>
+            </tr>
+          </thead>
+          <tbody id="fixedRows"></tbody>
+        </table>
+        <p id="emptyTerms" class="empty-state">
+          还没有术语。把常用的第一个词加进来。
+        </p>
+        <button id="addFixed" class="secondary">＋ 添加译法</button>
+      </section>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="section-number">03</span>
+          <div>
+            <h2>保持原样的词</h2>
+            <p class="panel-copy">
+              品牌、产品名和变量名，每行一个。最多 100 条。
+            </p>
+          </div>
+        </div>
+        <label class="field"
+          ><span class="sr-only">不翻译的词</span
+          ><textarea
+            id="protectedTerms"
+            rows="4"
+            placeholder="ComfyUI&#10;TypeScript&#10;YouNuo"
+          ></textarea>
+        </label>
+      </section>
+      <div class="save-bar">
+        <div class="actions">
+          <button id="save" class="primary">保存设置 ↗</button
+          ><button id="export" class="secondary">导出</button
+          ><label class="secondary file-button" tabindex="0"
+            >导入<input
+              id="import"
+              type="file"
+              accept=".json"
+              aria-label="导入设置"
+          /></label>
+        </div>
+        <p id="saveStatus" class="save-status" role="status">
+          导出只包含模型和术语，不包含访问令牌。
+        </p>
+      </div>
+      <section class="panel">
+        <div class="section-heading">
+          <span class="section-number">04</span>
+          <div>
+            <h2>自动翻译的网站</h2>
+            <p class="panel-copy">停止后，同一网站已打开的页面也会恢复原文。</p>
+          </div>
+        </div>
+        <div id="savedSites"></div>
+        <p id="noSites" class="empty-state">
+          尚未开启。去网页点击一次“开始翻译”即可。
+        </p>
+      </section>
+      <section class="about">
+        <div>
+          <p class="eyebrow">BUILT FOR CURIOUS MINDS</p>
+          <h2>阅读自由，代码也自由。</h2>
+          <p>
+            由 ANNO_YOO杏野 制作，免费开放源码。<br />欢迎分享使用体验，也欢迎一起把它做得更实用。
+          </p>
+        </div>
+        <div class="about-links">
+          <a
+            href="https://space.bilibili.com/13412148"
+            target="_blank"
+            rel="noopener noreferrer"
+            >B 站 · ANNO_YOO杏野 ↗</a
+          ><a
+            href="https://github.com/chengjing84/younuo-local-translator"
+            target="_blank"
+            rel="noopener noreferrer"
+            >GitHub · 源码与反馈 ↗</a
+          >
+        </div>
+      </section>
+      <footer class="page-footer">
+        <span>优诺 v0.8.0</span><span>MIT LICENSE · LOCAL FIRST</span>
+      </footer>
+    </main>
+    <script src="settings.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

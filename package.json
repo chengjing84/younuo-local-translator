@@ -1,0 +1,17 @@
+{
+  "name": "younuo-local-translator",
+  "version": "0.8.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "check": "node --check extension/background.js && node --check extension/content.js && node --check extension/popup.js && node --check extension/options.js && node --check extension/setup.js && node --check extension/settings.js"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "prettier": "3.6.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

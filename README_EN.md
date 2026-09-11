@@ -1,128 +1,49 @@
-# Younuo Local Translator
+# Younuo · Local Web Translator
 
-[简体中文](README.md) | **English**
+An open-source Edge extension powered by local Ollama models. Start once per site, translate visible text as you scroll, and restore the original whenever you need it.
 
-A lightweight, local-first Microsoft Edge webpage translator powered by Ollama and Qwen. Page text is processed on your own computer and is not sent to a cloud translation API.
+[中文说明](README.md) · [Author: ANNO_YOO杏野](https://space.bilibili.com/13412148) · [GitHub](https://github.com/chengjing84/younuo-local-translator)
 
-## Capabilities
+## Setup
 
-| Capability | Description |
-| --- | --- |
-| Continuous translation | Click **Start auto translation** once for a site. Younuo keeps translating lazy-loaded text, dynamic updates, SPA routes, child pages, and new tabs on that site. |
-| Reading modes | Switch between source, translation, and bilingual modes. Bilingual mode keeps the source text and adds a marked translation for review. |
-| Restore source text | **Original** stops continuous translation for the site and restores previously replaced text. |
-| Language selection | Auto-detect Chinese, English, Japanese, or Korean, or select the source language manually; choose any supported target language. |
-| Local Qwen models | Switch between Qwen2.5 3B and Qwen3 1.7B. Both run through local Ollama. |
-| Selection tools | Select page text to translate it independently or polish an existing translation. |
-| Terminology rules | Define fixed translations and protect brand names, product names, or code identifiers from translation. |
-| Local privacy | The extension talks only to the Younuo service on `127.0.0.1`, which calls your local Ollama instance. |
+Requires Windows 10/11, Microsoft Edge, Python 3.10+, and Ollama. Node.js is only needed for development.
 
-## Continuous translation behavior
+1. Start Ollama and run `ollama pull qwen3.5:9b`. Qwen2.5 3B is also supported; Qwen3 1.7B remains experimental.
+2. Run `install.cmd`. It creates a Python environment, checks the local service, and enables startup for the current Windows user after successful validation.
+3. Open `edge://extensions`, enable developer mode, and load the `extension` directory.
+4. Copy the token from `host/config.json` into the connection page, check the connection, and select an installed model.
+5. Open a normal webpage and click Start Translation.
 
-Automatic translation is remembered per website domain:
+Use `start-host.cmd` for manual startup. `uninstall.cmd` stops this project's service and removes auto-start; remove the Edge extension separately. Ollama is managed separately.
 
-1. Click **Start auto translation** to translate the currently visible text.
-2. New text is translated as you scroll or the page lazy-loads content.
-3. Dynamic text changes and SPA route changes are detected and translated.
-4. Automatic translation remains active on child pages and new tabs for the same website.
-5. Three green dots at the lower-right of the icon animate while translation is in progress; they disappear when the page is idle or complete.
-6. Click **Original** to stop the site session and restore source text.
+## Features and boundaries
 
-Other websites are unaffected.
+Translation, original and bilingual reading modes; exact-origin site preferences; selection translation; polishing of complete translated text nodes; fixed terminology and protected terms; settings import/export without credentials.
 
-## Requirements
+Stopping a site restores its open pages. Cross-origin frames do not inherit top-level consent. Switching languages preserves the source text, and stale responses are discarded. Requests are bounded, duplicate work is avoided, and errors are visible.
 
-- Windows 10 or later
-- Microsoft Edge
-- Python 3.10 or later
-- [Download Ollama for Windows](https://ollama.com/download/windows)
+Translation text stays on loopback. The service rejects remote Ollama URLs, ignores system HTTP proxies and does not log request text. Recent translations are cached in bounded memory. The extension stores preferences and its token locally. There are no cloud translation APIs, accounts or telemetry. Model downloads and links you choose to open require internet access.
 
-## Download a model
+Unsupported: browser internal pages, PDFs, images/Canvas, Shadow DOM, automatic translation of third-party frames, and individual text nodes over 3000 characters. Editors and code blocks are skipped. Translation operates on text nodes, so sentences split across markup may lose context. Models can still mistranslate; use bilingual mode for important content. Cancellation discards results but may not stop inference already running in Ollama.
 
-Install at least one model. Model files are not bundled with the repository or release package.
+## Upgrade to 0.8.0
 
-### Qwen2.5 3B — default
+Stop the old host, preserve `host/config.json`, update files and restart. The 0.7.0 uninstaller may fail to identify a process launched using a relative script path: verify that the old host has stopped. Reload the extension and refresh existing webpages. Legacy site/tab sessions are cleared; connection and terminology settings are retained.
 
-[Official Ollama model page](https://ollama.com/library/qwen2.5:3b)
+## Development
 
-```powershell
-ollama pull qwen2.5:3b
+```sh
+python -m unittest discover -s tests -v
+npm ci
+npx playwright install chromium
+npm test
+npm run check
 ```
 
-### Qwen3 1.7B — smaller option
+Set `EDGE_PATH` to an installed Edge executable to test with Edge instead of downloaded Chromium. `python tools/model-smoke.py` runs small manual quality samples against local models. `build-package.cmd` creates a ZIP without credentials, runtime environments or logs.
 
-[Official Ollama model page](https://ollama.com/library/qwen3:1.7b)
+See [validation](docs/VALIDATION.md), [contributing](CONTRIBUTING.md) and [changes](CHANGELOG.md).
 
-```powershell
-ollama pull qwen3:1.7b
-```
+## License
 
-Both models can be installed at the same time and selected from Younuo's settings page.
-
-## Installation
-
-1. Download and extract the repository ZIP, or clone it:
-
-   ```powershell
-   git clone https://github.com/chengjing84/younuo-local-translator.git
-   ```
-
-2. Double-click `install.cmd` in the project root.
-3. The installer creates a random local access token, starts the host service, and enables launch at Windows sign-in.
-4. Open `edge://extensions`.
-5. Enable **Developer mode**.
-6. Click **Load unpacked** and select the project's `extension` folder.
-7. Open Younuo and complete the first-run connection check.
-
-Double-click `start-host.cmd` to start the host manually. Run `uninstall.cmd` to remove launch at sign-in. Remove the Edge extension separately from `edge://extensions`.
-
-## Usage
-
-### Translate a page continuously
-
-1. Open a regular webpage and click the Younuo icon.
-2. Choose a source language or keep **Auto detect**.
-3. Choose the target language.
-4. Click **Start auto translation**.
-
-### Translate or polish selected text
-
-Select text on the webpage, then choose:
-
-- **Translate** for an independent translation using the selected Qwen model.
-- **Polish** to improve the wording and fluency of an existing translation.
-
-### Models and terminology
-
-The settings page lets you:
-
-- switch between installed Qwen models;
-- add fixed source-to-target translations;
-- protect terms that should remain unchanged;
-- import or export settings as JSON.
-
-## Privacy and security
-
-- Translation requests are sent only to the Younuo host on `127.0.0.1` and your local Ollama instance.
-- `host/config.json` contains a randomly generated local access token. It is excluded from Git and must not be shared.
-- The local host validates the token sent by the extension.
-- No analytics, paid API, account system, or cloud translation service is included.
-
-## Known limitations
-
-- Edge blocks extension scripts on protected pages such as `edge://extensions`.
-- Text rendered inside images or canvas cannot be translated directly.
-- Some closed Shadow DOM components cannot be inspected by browser extensions.
-- Sites that replace their DOM very frequently may cause individual text fragments to be translated again.
-- Translation speed and quality depend on the selected model and local hardware.
-
-## Development and testing
-
-```powershell
-python -m unittest discover -s tests
-node --check extension/background.js
-node --check extension/content.js
-node --check extension/popup.js
-```
-
-Run `build-package.cmd` to create a distributable ZIP in `dist` without local tokens, logs, model files, or the Python virtual environment.
+MIT. Copyright 2026 ANNO_YOO杏野. Ollama and model licenses are separate. [Follow the author on Bilibili](https://space.bilibili.com/13412148).

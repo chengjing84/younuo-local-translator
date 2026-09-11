@@ -11,7 +11,13 @@ __pycache__/
 
 # Build output and editor files
 dist/
+node_modules/
+test-results/
+playwright-report/
 .vscode/
 .idea/
 Thumbs.db
 .DS_Store
+
+# Local migration backups
+.local-backups/
