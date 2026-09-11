@@ -8,9 +8,9 @@ A lightweight, local-first Microsoft Edge webpage translator powered by Ollama a
 
 | Capability | Description |
 | --- | --- |
-| Continuous translation | Click **Start auto translation** once per tab. Younuo keeps translating lazy-loaded text, dynamic updates, SPA route changes, and navigation in that tab. |
-| In-place replacement | Translated text directly replaces the source text, avoiding extra boxes that disrupt reading and layout. |
-| Restore source text | **Show original** stops continuous translation for the tab and restores previously replaced text. |
+| Continuous translation | Click **Start auto translation** once for a site. Younuo keeps translating lazy-loaded text, dynamic updates, SPA routes, child pages, and new tabs on that site. |
+| Reading modes | Switch between source, translation, and bilingual modes. Bilingual mode keeps the source text and adds a marked translation for review. |
+| Restore source text | **Original** stops continuous translation for the site and restores previously replaced text. |
 | Language selection | Auto-detect Chinese, English, Japanese, or Korean, or select the source language manually; choose any supported target language. |
 | Local Qwen models | Switch between Qwen2.5 3B and Qwen3 1.7B. Both run through local Ollama. |
 | Selection tools | Select page text to translate it independently or polish an existing translation. |
@@ -19,15 +19,16 @@ A lightweight, local-first Microsoft Edge webpage translator powered by Ollama a
 
 ## Continuous translation behavior
 
-Automatic translation is enabled independently for each browser tab:
+Automatic translation is remembered per website domain:
 
 1. Click **Start auto translation** to translate the currently visible text.
 2. New text is translated as you scroll or the page lazy-loads content.
 3. Dynamic text changes and SPA route changes are detected and translated.
-4. Automatic translation remains active when the same tab navigates to another webpage.
-5. Click **Show original** to stop the session and restore source text.
+4. Automatic translation remains active on child pages and new tabs for the same website.
+5. Three green dots at the lower-right of the icon animate while translation is in progress; they disappear when the page is idle or complete.
+6. Click **Original** to stop the site session and restore source text.
 
-Starting translation in one tab does not enable it in other tabs.
+Other websites are unaffected.
 
 ## Requirements
 
