@@ -20,7 +20,6 @@ function mode(value) {
   });
 }
 function activity(data) {
-  $(".popup-shell").classList.toggle("is-working", data.status === "working");
   const labels = {
     working: `正在翻译 · 已处理 ${data.count || 0} 处`,
     complete: `已处理 ${data.count || 0} 处 · 自动跟随页面`,

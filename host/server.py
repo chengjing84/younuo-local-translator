@@ -20,7 +20,7 @@ if sys.stdout is None:
 if sys.stderr is None:
     sys.stderr = sys.stdout
 CONFIG_PATH = ROOT / "config.json"
-VERSION = "0.9.0"
+VERSION = "0.9.1"
 MODELS = {"qwen2.5:3b", "qwen3.5:4b", "qwen3.5:9b"}
 MODEL_NAME = re.compile(r"^[\w][\w./:-]{0,99}$")
 LANGUAGES = {"auto": "automatically detected language", "en": "English", "zh": "Simplified Chinese", "ja": "Japanese", "ko": "Korean"}

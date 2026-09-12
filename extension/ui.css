@@ -305,32 +305,6 @@ select {
   font-size: 9px;
   color: var(--muted);
 }
-.activity-dots {
-  position: absolute;
-  right: -5px;
-  bottom: -3px;
-  display: none;
-  gap: 2px;
-  padding: 3px;
-  background: var(--surface);
-  border-radius: 4px;
-}
-.activity-dots i {
-  width: 3px;
-  height: 3px;
-  background: var(--success);
-  border-radius: 50%;
-  animation: pulse 1s infinite;
-}
-.activity-dots i:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.activity-dots i:nth-child(3) {
-  animation-delay: 0.4s;
-}
-.is-working .activity-dots {
-  display: flex;
-}
 @keyframes pulse {
   50% {
     opacity: 0.35;

@@ -119,7 +119,7 @@ class HTTPTests(unittest.TestCase):
     def test_extension_origin_health(self):
         with mock.patch.object(server.OLLAMA,'models',return_value=['qwen2.5:3b']):
             status,data,headers=self.request(path='/health',origin='chrome-extension://'+'a'*32)
-        self.assertEqual(status,200);self.assertEqual(data['version'],'0.9.0')
+        self.assertEqual(status,200);self.assertEqual(data['version'],'0.9.1')
         self.assertEqual(headers['Access-Control-Allow-Origin'],'chrome-extension://'+'a'*32)
     def test_invalid_json_and_types(self):
         for data in [b'{',[],{'texts':'abc'},{'texts':[None]},{'texts':['x'],'model':[]},{'texts':['x'],'target':'auto'},{'texts':['x'],'glossary':{'fixed':[None]}}]:

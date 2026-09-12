@@ -6,6 +6,7 @@ const { test } = require("node:test"),
 function fixture() {
   const local = { autoTranslateOrigins: {} },
     session = {},
+    badges = [],
     tabs = {
       1: { id: 1, url: "https://a.example/page" },
       2: { id: 2, url: "https://a.example/second" },
@@ -23,6 +24,11 @@ function fixture() {
   });
   const chrome = {
     storage: { local: area(local), session: area(session) },
+    action: {
+      setBadgeText: async (value) => badges.push(value),
+      setBadgeBackgroundColor: async () => {},
+      setBadgeTextColor: async () => {},
+    },
     runtime: {
       getURL: (p) => "chrome-extension://" + "a".repeat(32) + "/" + p,
       onInstalled: { addListener() {} },
@@ -49,6 +55,7 @@ function fixture() {
   const ui = { url: chrome.runtime.getURL("popup.html") };
   return {
     local,
+    badges,
     tabs,
     call: (message, sender = ui) =>
       new Promise((r) => handler(message, sender, r)),
@@ -134,6 +141,34 @@ test("obsolete session status is ignored", async () => {
     (await f.call({ type: "GET_TRANSLATION_STATUS", tabId: 1 })).data.status,
     "ready",
   );
+});
+test("working status appears on the extension icon and clears when done", async () => {
+  const f = fixture();
+  const started = await f.call({
+    type: "SET_TAB_TRANSLATION_SESSION",
+    tabId: 1,
+    session,
+  });
+  await f.call(
+    {
+      type: "UPDATE_TRANSLATION_STATUS",
+      sessionId: started.session.id,
+      status: "working",
+      count: 0,
+    },
+    f.sender(1),
+  );
+  assert.equal(f.badges.at(-1).text, "•••");
+  await f.call(
+    {
+      type: "UPDATE_TRANSLATION_STATUS",
+      sessionId: started.session.id,
+      status: "complete",
+      count: 2,
+    },
+    f.sender(1),
+  );
+  assert.equal(f.badges.at(-1).text, "");
 });
 test("settings import validation rejects malformed entries before persistence", () => {
   const c = { URL };

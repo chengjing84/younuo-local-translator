@@ -57,7 +57,7 @@ async function ui(name) {
     fetch = async () => ({
       ok: true,
       json: async () => ({
-        version: "0.9.0",
+        version: "0.9.1",
         protocolVersion: 1,
         ollamaModels: models,
         ollamaError: null,

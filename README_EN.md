@@ -40,9 +40,9 @@ Translation text stays on loopback. The service rejects remote Ollama URLs, igno
 
 Unsupported: browser internal pages, PDFs, images/Canvas, Shadow DOM, automatic translation of third-party frames, and individual text nodes over 3000 characters. Editors and code blocks are skipped. Translation operates on text nodes, so sentences split across markup may lose context. Models can still mistranslate; use bilingual mode for important content. Cancellation discards results but may not stop inference already running in Ollama.
 
-## Upgrade to 0.9.0 Beta
+## Upgrade to 0.9.1 Beta
 
-Run `install.cmd` again so the 0.9.0 local service replaces the old process, then reload the extension and refresh open pages. Existing model and glossary settings remain; external API keys are never exported.
+Run `install.cmd` again so the 0.9.1 local service replaces the old process, then reload the extension and refresh open pages. Existing model and glossary settings remain; external API keys are never exported.
 
 ## Upgrade to 0.8.0
 

@@ -32,6 +32,22 @@ function origin(url) {
 function requestKey(sender, id) {
   return `${sender.tab?.id ?? "ui"}:${sender.documentId || sender.frameId || 0}:${id}`;
 }
+function setTranslationBadge(tabId, status) {
+  const working = status === "working";
+  const updates = [
+    chrome.action.setBadgeText({ tabId, text: working ? "•••" : "" }),
+  ];
+  if (working) {
+    updates.push(
+      chrome.action.setBadgeBackgroundColor({ tabId, color: "#2f6b57" }),
+    );
+    if (chrome.action.setBadgeTextColor)
+      updates.push(
+        chrome.action.setBadgeTextColor({ tabId, color: "#ffffff" }),
+      );
+  }
+  Promise.all(updates).catch(() => {});
+}
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   const raw = await chrome.storage.local.get(null);
   await chrome.storage.local.set({ ...DEFAULTS, ...raw, settingsVersion: 5 });
@@ -156,6 +172,7 @@ async function handle(message, sender) {
         origin: site,
         sessionId: message.sessionId,
       };
+      setTranslationBadge(sender.tab.id, message.status);
       await chrome.storage.session.set({ [`status:${sender.tab.id}`]: data });
       chrome.runtime
         .sendMessage({
@@ -209,6 +226,8 @@ async function handle(message, sender) {
       await chrome.storage.local.set({
         autoTranslateOrigins: settings.autoTranslateOrigins,
       });
+      if (message.type === "CLEAR_TAB_TRANSLATION_SESSION")
+        setTranslationBadge(message.tabId, "idle");
       return { ok: true, session: settings.autoTranslateOrigins[site] || null };
     });
   if (message.type === "GET_TRANSLATION_STATUS") {
@@ -238,6 +257,7 @@ function clearTab(tabId) {
   for (const request of requests.values())
     if (request.tabId === tabId) request.controller.abort();
   chrome.storage.session.remove(`status:${tabId}`).catch(() => {});
+  setTranslationBadge(tabId, "idle");
 }
 chrome.tabs.onRemoved.addListener(clearTab);
 chrome.tabs.onUpdated.addListener((tabId, change) => {
