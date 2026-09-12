@@ -1,3 +1,4 @@
+﻿# Windows PowerShell 5.1 requires a UTF-8 BOM to decode the Chinese status messages below.
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $HostRoot = Join-Path $ProjectRoot 'host'
