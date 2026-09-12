@@ -53,9 +53,11 @@ $("#checkHost").onclick = async () => {
       hostUrl !== $("#hostUrl").value.trim().replace(/\/$/, "")
     )
       return;
-    const installed = YounuoSettings.models.filter((m) =>
-      data.ollamaModels?.includes(m),
-    );
+    const available = Array.isArray(data.ollamaModels) ? data.ollamaModels : [];
+    const installed = [
+      ...YounuoSettings.models.filter((m) => available.includes(m)),
+      ...available.filter((m) => !YounuoSettings.models.includes(m)),
+    ];
     $("#checks").replaceChildren(
       row("本机服务", `v${data.version}`, "ok"),
       row(

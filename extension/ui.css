@@ -445,7 +445,8 @@ select {
   font-size: 12px;
 }
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   padding: 11px 12px;
 }

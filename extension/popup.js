@@ -4,7 +4,8 @@ let tabId = null,
 const defaults = {
   sourceLanguage: "auto",
   targetLanguage: "zh",
-  qwenModel: "qwen2.5:3b",
+  qwenModel: "qwen3.5:4b",
+  provider: "ollama",
   displayMode: "translation",
   setupComplete: false,
 };
@@ -81,6 +82,7 @@ async function begin(display) {
         source: $("#sourceLanguage").value,
         target: $("#targetLanguage").value,
         model: s.qwenModel,
+        provider: s.provider,
       },
     });
     enabled = true;
@@ -133,11 +135,13 @@ chrome.runtime.onMessage.addListener((m) => {
   $("#sourceLanguage").value = s.sourceLanguage;
   $("#targetLanguage").value = s.targetLanguage;
   $("#modelCaption").textContent =
-    {
-      "qwen3.5:9b": "Qwen3.5 9B · 本机运行",
-      "qwen2.5:3b": "Qwen2.5 3B · 本机运行",
-      "qwen3:1.7b": "Qwen3 1.7B · 试验模型",
-    }[s.qwenModel] || s.qwenModel;
+    s.provider === "openai"
+      ? `外部 API · ${s.qwenModel}`
+      : {
+          "qwen3.5:4b": "Qwen3.5 4B · 日常推荐",
+          "qwen3.5:9b": "Qwen3.5 9B · 质量悠闲",
+          "qwen2.5:3b": "Qwen2.5 3B · 极致速度",
+        }[s.qwenModel] || `自定义 Ollama · ${s.qwenModel}`;
   $("#connection").textContent = s.setupComplete ? "连接设置" : "连接本机服务";
   try {
     const [tab] = await chrome.tabs.query({

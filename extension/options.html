@@ -31,17 +31,55 @@
         </div>
         <div class="form-grid">
           <label class="field"
-            ><span>默认模型</span
-            ><select id="qwenModel">
-              <option value="qwen3.5:9b">Qwen3.5 9B · 推荐</option>
-              <option value="qwen2.5:3b">Qwen2.5 3B</option>
-              <option value="qwen3:1.7b">Qwen3 1.7B · 试验</option>
+            ><span>接入方式</span
+            ><select id="provider">
+              <option value="ollama">本机 Ollama</option>
+              <option value="openai">外部 API（OpenAI 兼容）</option>
             </select></label
+          >
+          <label class="field"
+            ><span>模型名称</span
+            ><input
+              id="qwenModel"
+              list="ollamaModelOptions"
+              maxlength="100"
+              autocomplete="off"
+            />
+            <datalist id="ollamaModelOptions">
+              <option value="qwen2.5:3b">极致速度</option>
+              <option value="qwen3.5:4b">日常推荐</option>
+              <option value="qwen3.5:9b">质量悠闲</option>
+            </datalist></label
           >
           <div class="model-check">
             <button id="checkModel" class="secondary">检查模型</button
             ><span id="modelHealth" role="status">切换后点击底部保存</span>
           </div>
+        </div>
+        <div id="externalFields" hidden style="margin-top: 18px">
+          <div class="form-grid">
+            <label class="field"
+              ><span>API 地址</span
+              ><input
+                id="apiUrl"
+                maxlength="500"
+                placeholder="https://api.example.com/v1/chat/completions"
+                spellcheck="false"
+            /></label>
+            <label class="field"
+              ><span>API Key</span
+              ><input
+                id="apiKey"
+                type="password"
+                maxlength="500"
+                autocomplete="off"
+                placeholder="只保存在当前浏览器"
+            /></label>
+          </div>
+          <p class="panel-copy">
+            支持 OpenAI-compatible chat completions。网页脚本拿不到
+            Key，导出设置也不会包含 Key。
+          </p>
         </div>
       </section>
       <section class="panel">
@@ -138,7 +176,7 @@
         </div>
       </section>
       <footer class="page-footer">
-        <span>优诺 v0.8.0</span><span>MIT LICENSE · LOCAL FIRST</span>
+        <span>优诺 v0.9.0</span><span>MIT LICENSE · LOCAL FIRST</span>
       </footer>
     </main>
     <script src="settings.js"></script>

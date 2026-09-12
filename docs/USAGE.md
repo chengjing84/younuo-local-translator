@@ -30,7 +30,7 @@ ollama pull qwen2.5:3b
 ```
 
 ```powershell
-ollama pull qwen3:1.7b
+ollama pull qwen3.5:4b
 ```
 
 ```powershell
@@ -38,7 +38,7 @@ ollama pull qwen3:1.7b
 ollama list
 ```
 
-下载需要联网，完成后本机文字翻译无需云端 API 或付费账号。网页本身仍可能需要联网。若命令提示无法连接 Ollama，先启动应用；只有没有运行后台实例时才需要手动执行 `ollama serve`，已经运行就不要重复启动。
+下载需要联网。使用 Ollama 时，完成下载后翻译无需云端 API 或付费账号；只有主动选择外部 API 时文字才会发送到所填服务。网页本身仍可能需要联网。若命令提示无法连接 Ollama，先启动应用。
 
 ## 3. 初始化优诺
 
@@ -80,6 +80,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\install.ps1 -Pyt
 进入设置，选择模型，点击“检查模型”，然后保存。若模型没安装，先运行对应 `ollama pull` 命令；仅下载不会自动切换优诺的选择。模型较慢时可试 3B，并用对照模式核对条件、否定和顺序。
 
 “固定译法”用于指定某个词怎么翻译，例如 `workflow` → `工作流`；“保护词”用于保留产品名或缩写，例如 `ComfyUI`。每类最多 100 条、区分大小写，单词条最多 100 字符。URL 会自动保护。
+
+设置页可直接填写 `ollama list` 中其他模型的完整名称。也可切换到“外部 API（OpenAI 兼容）”，填写完整的 HTTPS `chat/completions` 地址、模型名和 API Key。本机回环 API 可以使用 HTTP。外部服务会收到翻译文字，并可能产生费用；Key 仅保存在当前浏览器，不导出、不写入优诺日志。不同服务对 `response_format` 的兼容程度不同，不兼容时会显示格式错误。
 
 导出设置适合备份模型和术语，不包含访问令牌，也不包含网站自动翻译列表；换浏览器仍需重新连接并启用网站。保存模型、术语后，已开启翻译的页面会按新设置处理。
 

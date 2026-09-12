@@ -12,6 +12,7 @@ __pycache__/
 # Build output and editor files
 dist/
 node_modules/
+.npm-cache/
 test-results/
 playwright-report/
 .vscode/
@@ -21,3 +22,5 @@ Thumbs.db
 
 # Local migration backups
 .local-backups/
+HANDOFF.md
+assessment/

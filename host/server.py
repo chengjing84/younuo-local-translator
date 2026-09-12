@@ -20,8 +20,9 @@ if sys.stdout is None:
 if sys.stderr is None:
     sys.stderr = sys.stdout
 CONFIG_PATH = ROOT / "config.json"
-VERSION = "0.8.0"
-MODELS = {"qwen3.5:9b", "qwen2.5:3b", "qwen3:1.7b"}
+VERSION = "0.9.0"
+MODELS = {"qwen2.5:3b", "qwen3.5:4b", "qwen3.5:9b"}
+MODEL_NAME = re.compile(r"^[\w][\w./:-]{0,99}$")
 LANGUAGES = {"auto": "automatically detected language", "en": "English", "zh": "Simplified Chinese", "ja": "Japanese", "ko": "Korean"}
 LANGUAGE_LABELS = {"auto": "自动识别的语言", "en": "英语", "zh": "简体中文", "ja": "日语", "ko": "韩语"}
 
@@ -92,9 +93,15 @@ class Glossary:
 
     @staticmethod
     def restore(text, mapping):
+        cjkish = r"\u2e80-\u9fff\u3040-\u30ff\uac00-\ud7af"
         for marker, target in mapping.items():
             if marker not in text:
                 raise TranslationError("模型未保留术语标记，请重试或切换模型")
+            escaped = re.escape(marker)
+            if re.match(f"[{cjkish}]", target):
+                text = re.sub(rf"(?<=[{cjkish}])[ \t]+{escaped}", marker, text)
+            if re.search(f"[{cjkish}]$", target):
+                text = re.sub(rf"{escaped}[ \t]+(?=[{cjkish}])", marker, text)
             text = text.replace(marker, target)
         return text
 
@@ -109,7 +116,7 @@ class OllamaTranslator:
         return [x.get("name", "") for x in self._request("/api/tags", None, "GET").get("models", [])]
 
     def translate_many(self, texts, source, target, model, glossary, current=None):
-        if source not in LANGUAGES or target not in LANGUAGES or target == "auto" or model not in MODELS:
+        if source not in LANGUAGES or target not in LANGUAGES or target == "auto" or not isinstance(model, str) or not MODEL_NAME.fullmatch(model):
             raise TranslationError("不支持的语言或模型")
         key = json.dumps([texts, source, target, model, glossary.fixed, glossary.protected, current], ensure_ascii=False)
         if not self._lock.acquire(timeout=2):
@@ -173,6 +180,52 @@ class OllamaTranslator:
             raise TranslationError("Ollama 未启动、响应超时或返回格式无效") from exc
 
 
+class ExternalTranslator(OllamaTranslator):
+    def __init__(self, endpoint, api_key):
+        super().__init__("")
+        self.endpoint, self.api_key = endpoint, api_key
+
+    def _request(self, path, payload, method="POST"):
+        if path != "/api/generate" or not payload:
+            raise TranslationError("外部 API 请求无效")
+        body = {
+            "model": payload["model"],
+            "messages": [{"role": "user", "content": payload["prompt"]}],
+            "temperature": 0.1,
+            "max_tokens": payload["options"]["num_predict"],
+            "response_format": {"type": "json_object"},
+        }
+        request = urllib.request.Request(self.endpoint, data=json.dumps(body).encode(), headers={"Content-Type": "application/json", "Authorization": "Bearer " + self.api_key})
+        try:
+            class NoRedirect(urllib.request.HTTPRedirectHandler):
+                def redirect_request(self, req, fp, code, msg, headers, newurl):
+                    return None
+            with urllib.request.build_opener(NoRedirect()).open(request, timeout=25) as response:
+                data = json.loads(response.read().decode())
+            content = data["choices"][0]["message"]["content"]
+            if not isinstance(content, str):
+                raise ValueError()
+            return {"response": content}
+        except urllib.error.HTTPError as exc:
+            raise TranslationError(f"外部 API 返回 HTTP {exc.code}") from exc
+        except (urllib.error.URLError, TimeoutError, ValueError, KeyError, IndexError, json.JSONDecodeError) as exc:
+            raise TranslationError("外部 API 无法连接、超时或返回格式无效") from exc
+
+
+def external_translator(data):
+    config = data.get("external")
+    if not isinstance(config, dict):
+        raise TranslationError("缺少外部 API 配置")
+    endpoint, key = config.get("url"), config.get("key")
+    if not isinstance(endpoint, str) or len(endpoint) > 500 or not isinstance(key, str) or not 1 <= len(key) <= 500:
+        raise TranslationError("外部 API 配置无效")
+    parsed = urllib.parse.urlsplit(endpoint)
+    loopback = parsed.hostname in {"127.0.0.1", "localhost"}
+    if ((not loopback and parsed.scheme != "https") or (loopback and parsed.scheme not in {"http", "https"}) or parsed.username or parsed.password or parsed.query or parsed.fragment or not parsed.path):
+        raise TranslationError("外部 API 必须使用 HTTPS，本机地址可使用 HTTP")
+    return ExternalTranslator(endpoint, key)
+
+
 OLLAMA = OllamaTranslator(CONFIG.get("ollama_url", "http://127.0.0.1:11434"))
 
 
@@ -228,8 +281,8 @@ class Handler(BaseHTTPRequestHandler):
         texts = data.get("texts")
         if not isinstance(texts, list) or not 1 <= len(texts) <= 4 or any(not isinstance(t, str) or not t.strip() or len(t) > 3000 for t in texts) or sum(map(len, texts)) > 6000:
             raise TranslationError("每次需要 1–4 段文字，每段最多 3000 字符，总计最多 6000 字符")
-        source, target, model = data.get("source", "auto"), data.get("target", "zh"), data.get("model", "qwen2.5:3b")
-        if not all(isinstance(v, str) for v in [source, target, model]) or source not in LANGUAGES or target not in LANGUAGES or target == "auto" or model not in MODELS:
+        source, target, model = data.get("source", "auto"), data.get("target", "zh"), data.get("model", "qwen3.5:4b")
+        if not all(isinstance(v, str) for v in [source, target, model]) or source not in LANGUAGES or target not in LANGUAGES or target == "auto" or not MODEL_NAME.fullmatch(model):
             raise TranslationError("不支持的语言或模型")
         mode = data.get("mode", "precise")
         if mode not in {"precise", "polish"}:
@@ -237,7 +290,11 @@ class Handler(BaseHTTPRequestHandler):
         current = data.get("currentTranslations") if mode == "polish" else None
         if mode == "polish" and (not isinstance(current, list) or len(current) != len(texts) or any(not isinstance(t, str) or not t.strip() or len(t) > 3000 for t in current)):
             raise TranslationError("润色需要与原文对应的完整译文")
-        result = OLLAMA.translate_many(texts, source, target, model, Glossary.from_payload(data.get("glossary")), current)
+        provider = data.get("provider", "ollama")
+        if provider not in {"ollama", "openai"}:
+            raise TranslationError("不支持的接入方式")
+        translator = OLLAMA if provider == "ollama" else external_translator(data)
+        result = translator.translate_many(texts, source, target, model, Glossary.from_payload(data.get("glossary")), current)
         self._json(200, {"translations": result})
 
     def _body(self):

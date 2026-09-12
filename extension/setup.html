@@ -16,7 +16,8 @@
         <p class="eyebrow">01 / CONNECT</p>
         <h1>连接一次，<br />随时读懂。</h1>
         <p class="lede">
-          网页 → 优诺本机服务 → Ollama。<br />没有云端翻译 API，没有账号和额度。
+          网页 → 优诺本机服务 → Ollama。<br />默认完全本地；也可稍后在设置中主动配置外部
+          API。
         </p>
       </header>
       <section class="panel">
@@ -26,25 +27,25 @@
             <h2>启动服务与模型</h2>
             <p class="panel-copy">
               首次运行 install.cmd，之后使用
-              start-host.cmd。按速度与质量需求选择一个模型即可。
+              start-host.cmd。下面三个是推荐安装项，也可以在检查连接后选择其他已安装的
+              Ollama 模型。
             </p>
           </div>
         </div>
         <div class="command-box">
-          <span>9B · 质量优先，显存占用和等待更多</span
-          ><code>ollama pull qwen3.5:9b</code>
+          <span>4B · 日常推荐</span><code>ollama pull qwen3.5:4b</code>
         </div>
         <div class="command-box">
-          <span>3B · 速度折中，注意漏译</span
+          <span>3B · 极致速度，注意漏译</span
           ><code>ollama pull qwen2.5:3b</code>
         </div>
         <div class="command-box">
-          <span>1.7B · 轻量试验，注意语义反转</span
-          ><code>ollama pull qwen3:1.7b</code>
+          <span>9B · 质量悠闲，显存占用和等待更多</span
+          ><code>ollama pull qwen3.5:9b</code>
         </div>
         <p class="panel-copy">
           Windows 10 22H2+/11、Python 3.10+ 和运行中的
-          Ollama。模型只需装一个，三个均未验证 NSFW 翻译支持。
+          Ollama。推荐模型只需装一个，三个均未验证 NSFW 翻译支持。
         </p>
         <p class="panel-copy">
           <a

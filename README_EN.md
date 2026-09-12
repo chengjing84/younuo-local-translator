@@ -6,11 +6,11 @@ An open-source Edge extension powered by local Ollama models. Start once per sit
 
 ## Model trade-offs
 
-| Model      | Strength / limitation                                                                     | Sample mean | Install                  |
-| ---------- | ----------------------------------------------------------------------------------------- | ----------- | ------------------------ |
-| Qwen3.5 9B | Quality first; largest memory footprint and longest waits                                 | 2.12 s      | `ollama pull qwen3.5:9b` |
-| Qwen2.5 3B | Faster and smaller; samples included untranslated words and answering source instructions | 0.67 s      | `ollama pull qwen2.5:3b` |
-| Qwen3 1.7B | Smallest, experimental; a sample reversed before/after meaning                            | 0.43 s      | `ollama pull qwen3:1.7b` |
+| Model      | Strength / limitation                                         | Sample mean | Install                  |
+| ---------- | ------------------------------------------------------------- | ----------- | ------------------------ |
+| Qwen2.5 3B | Maximum speed; known omissions and instruction-answering risk | ~0.23 s     | `ollama pull qwen2.5:3b` |
+| Qwen3.5 4B | Recommended daily balance                                     | ~0.41 s     | `ollama pull qwen3.5:4b` |
+| Qwen3.5 9B | Quality at a relaxed pace; largest footprint                  | ~0.66 s     | `ollama pull qwen3.5:9b` |
 
 These are eight short samples per model, not a hardware or full-page benchmark. NSFW translation has not been validated for any of these official tags; no support claim is made. The default is unchanged.
 
@@ -20,7 +20,7 @@ See the detailed Chinese [model guide](docs/MODELS.md) and [installation, usage 
 
 Requires Windows 10 22H2+ / 11, Microsoft Edge, Python 3.10+, and Ollama. Node.js is only needed for development.
 
-1. Start Ollama and run `ollama pull qwen3.5:9b`. Qwen2.5 3B is also supported; Qwen3 1.7B remains experimental.
+1. Start Ollama and run `ollama pull qwen3.5:4b`. You may also enter another installed Ollama model or configure an OpenAI-compatible HTTPS API in Settings.
 2. Run `install.cmd`. It creates a Python environment, checks the local service, and enables startup for the current Windows user after successful validation.
 3. Open `edge://extensions`, enable developer mode, and load the `extension` directory.
 4. Copy the token from `host/config.json` into the connection page, check the connection, and select an installed model.
@@ -37,6 +37,10 @@ Stopping a site restores its open pages. Cross-origin frames do not inherit top-
 Translation text stays on loopback. The service rejects remote Ollama URLs, ignores system HTTP proxies and does not log request text. Recent translations are cached in bounded memory. The extension stores preferences and its token locally. There are no cloud translation APIs, accounts or telemetry. Model downloads and links you choose to open require internet access.
 
 Unsupported: browser internal pages, PDFs, images/Canvas, Shadow DOM, automatic translation of third-party frames, and individual text nodes over 3000 characters. Editors and code blocks are skipped. Translation operates on text nodes, so sentences split across markup may lose context. Models can still mistranslate; use bilingual mode for important content. Cancellation discards results but may not stop inference already running in Ollama.
+
+## Upgrade to 0.9.0 Beta
+
+Run `install.cmd` again so the 0.9.0 local service replaces the old process, then reload the extension and refresh open pages. Existing model and glossary settings remain; external API keys are never exported.
 
 ## Upgrade to 0.8.0
 

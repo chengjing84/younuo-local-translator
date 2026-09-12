@@ -21,7 +21,13 @@
   let glossary = { fixed: [], protected: [] };
   const normalize = (text) => text.replace(/\s+/g, " ").trim();
   const sessionKey = (s) =>
-    JSON.stringify([s.source, s.target, s.model, glossary]);
+    JSON.stringify([
+      s.source,
+      s.target,
+      s.model,
+      s.provider || "ollama",
+      glossary,
+    ]);
   const ownUI = (el) =>
     el?.closest(
       ".younuo-toolbar,.younuo-selection-card,.younuo-bilingual-translation",
@@ -307,10 +313,15 @@
     const stored = await chrome.storage.local.get({
       displayMode: "translation",
       glossary: { fixed: [], protected: [] },
-      qwenModel: "qwen2.5:3b",
+      qwenModel: "qwen3.5:4b",
+      provider: "ollama",
     });
     if (epoch !== generation) return;
-    activeSession = { ...session, model: stored.qwenModel };
+    activeSession = {
+      ...session,
+      model: stored.qwenModel,
+      provider: stored.provider,
+    };
     glossary = stored.glossary;
     displayMode =
       stored.displayMode === "bilingual" ? "bilingual" : "translation";
@@ -350,8 +361,17 @@
     if (changes.autoTranslateOrigins) syncSession();
     if (changes.displayMode && changes.displayMode.newValue !== "original")
       setDisplay(changes.displayMode.newValue);
-    if ((changes.glossary || changes.qwenModel) && activeSession) {
+    if (
+      (changes.glossary ||
+        changes.qwenModel ||
+        changes.provider ||
+        changes.apiUrl ||
+        changes.apiKey) &&
+      activeSession
+    ) {
       cache.clear();
+      if (changes.provider || changes.apiUrl || changes.apiKey)
+        for (const record of records.values()) record.translations.clear();
       startTranslation({ ...activeSession });
     }
   });
@@ -428,7 +448,8 @@
     const stored = await chrome.storage.local.get({
       sourceLanguage: "auto",
       targetLanguage: "zh",
-      qwenModel: "qwen2.5:3b",
+      qwenModel: "qwen3.5:4b",
+      provider: "ollama",
       glossary: { fixed: [], protected: [] },
     });
     if (version !== selectionVersion) return;
@@ -445,6 +466,7 @@
           source: stored.sourceLanguage,
           target: stored.targetLanguage,
           model: stored.qwenModel,
+          provider: stored.provider,
           glossary: stored.glossary,
           texts: [text],
           currentTranslations: current ? [current] : [],

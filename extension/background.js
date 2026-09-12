@@ -2,7 +2,10 @@
 const DEFAULTS = {
   hostUrl: "http://127.0.0.1:8765",
   token: "",
-  qwenModel: "qwen2.5:3b",
+  qwenModel: "qwen3.5:4b",
+  provider: "ollama",
+  apiUrl: "",
+  apiKey: "",
   sourceLanguage: "auto",
   targetLanguage: "zh",
   displayMode: "translation",
@@ -71,7 +74,17 @@ async function hostRequest(
   try {
     const response = await fetch(settings.hostUrl + path, {
       method: path === "/health" ? "GET" : "POST",
-      body: path === "/translate" ? options.body : undefined,
+      body:
+        path === "/translate"
+          ? JSON.stringify({
+              ...JSON.parse(options.body),
+              provider: settings.provider,
+              external:
+                settings.provider === "openai"
+                  ? { url: settings.apiUrl, key: settings.apiKey }
+                  : undefined,
+            })
+          : undefined,
       headers: {
         "Content-Type": "application/json",
         "X-Page-Translator-Token": settings.token,
@@ -180,8 +193,13 @@ async function handle(message, sender) {
           !["en", "zh", "ja", "ko"].includes(s.target)
         )
           throw new Error("语言设置无效");
-        if (!["qwen3.5:9b", "qwen2.5:3b", "qwen3:1.7b"].includes(s.model))
+        if (
+          typeof s.model !== "string" ||
+          !/^[\w][\w./:-]{0,99}$/.test(s.model)
+        )
           throw new Error("模型设置无效");
+        if (!["ollama", "openai"].includes(s.provider || "ollama"))
+          throw new Error("接入方式无效");
         settings.autoTranslateOrigins[site] = {
           ...s,
           origin: site,

@@ -57,7 +57,7 @@ async function ui(name) {
     fetch = async () => ({
       ok: true,
       json: async () => ({
-        version: "0.8.0",
+        version: "0.9.0",
         protocolVersion: 1,
         ollamaModels: models,
         ollamaError: null,
@@ -75,10 +75,10 @@ test("setup requires installed model and saves selected available model", async 
   try {
     await p.locator("#checkHost").click();
     assert.equal(await p.locator("#finish").isDisabled(), true);
-    await p.evaluate(() => (models = ["qwen3.5:9b"]));
+    await p.evaluate(() => (models = ["qwen3.5:9b", "qwen3.5:4b"]));
     await p.locator("#checkHost").click();
     await p.locator("#finish").click();
-    assert.equal(await p.evaluate(() => uiData.qwenModel), "qwen3.5:9b");
+    assert.equal(await p.evaluate(() => uiData.qwenModel), "qwen3.5:4b");
     assert.equal(await p.evaluate(() => uiData.setupComplete), true);
   } finally {
     await p.close();
@@ -117,6 +117,41 @@ test("malformed settings import leaves preferences unchanged", async () => {
       fixed: [],
       protected: [],
     });
+  } finally {
+    await p.close();
+  }
+});
+test("options saves custom Ollama and external API settings", async () => {
+  const p = await ui("options");
+  try {
+    await p.locator("#qwenModel").fill("custom/model:latest");
+    await p.locator("#save").click();
+    assert.equal(
+      await p.evaluate(() => uiData.qwenModel),
+      "custom/model:latest",
+    );
+    await p.locator("#provider").selectOption("openai");
+    await p.locator("#qwenModel").fill("vendor/model-v1");
+    await p
+      .locator("#apiUrl")
+      .fill("https://api.example.com/v1/chat/completions");
+    await p.locator("#apiKey").fill("private-test-key");
+    await p.locator("#save").click();
+    assert.deepEqual(
+      await p.evaluate(() => ({
+        provider: uiData.provider,
+        model: uiData.qwenModel,
+        url: uiData.apiUrl,
+        key: uiData.apiKey,
+      })),
+      {
+        provider: "openai",
+        model: "vendor/model-v1",
+        url: "https://api.example.com/v1/chat/completions",
+        key: "private-test-key",
+      },
+    );
+    assert.equal(await p.evaluate(() => "apiKey" in exportable(uiData)), false);
   } finally {
     await p.close();
   }

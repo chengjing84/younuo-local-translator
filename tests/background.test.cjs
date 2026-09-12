@@ -136,10 +136,34 @@ test("obsolete session status is ignored", async () => {
   );
 });
 test("settings import validation rejects malformed entries before persistence", () => {
-  const c = {};
+  const c = { URL };
   vm.runInNewContext(
     fs.readFileSync(path.join(__dirname, "../extension/settings.js"), "utf8"),
     c,
+  );
+  assert.equal(
+    c.YounuoSettings.validate({
+      qwenModel: "my-model:latest",
+      glossary: { fixed: [], protected: [] },
+    }).qwenModel,
+    "my-model:latest",
+  );
+  const external = c.YounuoSettings.validate({
+    qwenModel: "vendor/model",
+    provider: "openai",
+    apiUrl: "https://api.example.com/v1/chat/completions",
+    apiKey: "secret",
+    glossary: { fixed: [], protected: [] },
+  });
+  assert.equal(external.provider, "openai");
+  assert.throws(() =>
+    c.YounuoSettings.validate({
+      qwenModel: "vendor/model",
+      provider: "openai",
+      apiUrl: "http://api.example.com/v1/chat/completions",
+      apiKey: "secret",
+      glossary: { fixed: [], protected: [] },
+    }),
   );
   for (const g of [
     { fixed: [null], protected: [] },

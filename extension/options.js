@@ -4,6 +4,16 @@ function notify(text, error = false) {
   $("#saveStatus").textContent = text;
   $("#saveStatus").classList.toggle("error", error);
 }
+function renderProvider() {
+  const external = $("#provider").value === "openai";
+  $("#externalFields").hidden = !external;
+  $("#checkModel").textContent = external ? "检查配置" : "检查模型";
+}
+function exportable(data) {
+  const result = { ...data };
+  delete result.apiKey;
+  return result;
+}
 function renderFixed() {
   const body = $("#fixedRows");
   body.replaceChildren();
@@ -37,6 +47,9 @@ function renderFixed() {
 async function save() {
   const data = YounuoSettings.validate({
     qwenModel: $("#qwenModel").value,
+    provider: $("#provider").value,
+    apiUrl: $("#apiUrl").value,
+    apiKey: $("#apiKey").value,
     glossary: {
       fixed: fixed.filter((x) => x.source.trim() || x.target.trim()),
       protected: $("#protectedTerms")
@@ -51,10 +64,17 @@ async function save() {
 }
 async function init() {
   const s = await chrome.storage.local.get({
-    qwenModel: "qwen2.5:3b",
+    qwenModel: "qwen3.5:4b",
+    provider: "ollama",
+    apiUrl: "",
+    apiKey: "",
     glossary: { fixed: [], protected: [] },
   });
   $("#qwenModel").value = s.qwenModel;
+  $("#provider").value = s.provider;
+  $("#apiUrl").value = s.apiUrl;
+  $("#apiKey").value = s.apiKey;
+  renderProvider();
   fixed = s.glossary.fixed || [];
   $("#protectedTerms").value = (s.glossary.protected || []).join("\n");
   renderFixed();
@@ -98,8 +118,8 @@ $("#addFixed").onclick = () => {
 $("#save").onclick = () => save().catch((e) => notify(e.message, true));
 $("#export").onclick = async () => {
   try {
-    const data = await save(),
-      url = URL.createObjectURL(
+    const data = exportable(await save());
+    const url = URL.createObjectURL(
         new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
       ),
       a = document.createElement("a");
@@ -116,10 +136,17 @@ $("#import").onchange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
     if (file.size > 100000) throw new Error("设置文件不能超过 100 KB");
-    const data = YounuoSettings.validate(JSON.parse(await file.text()));
+    const raw = JSON.parse(await file.text());
+    if (raw.provider === "openai" && !raw.apiKey)
+      raw.apiKey = (await chrome.storage.local.get({ apiKey: "" })).apiKey;
+    const data = YounuoSettings.validate(raw, { allowMissingApiKey: true });
     await chrome.storage.local.set(data);
     await init();
-    notify("导入完成 · 连接令牌不会被更改");
+    notify(
+      data.provider === "openai" && !data.apiKey
+        ? "导入完成 · 请重新填写 API Key"
+        : "导入完成 · 连接令牌不会被更改",
+    );
   } catch (e) {
     notify("未导入：" + e.message, true);
   } finally {
@@ -131,6 +158,17 @@ $("#checkModel").onclick = async () => {
   b.disabled = true;
   $("#modelHealth").textContent = "正在检查…";
   try {
+    if ($("#provider").value === "openai") {
+      YounuoSettings.validate({
+        qwenModel: $("#qwenModel").value,
+        provider: "openai",
+        apiUrl: $("#apiUrl").value,
+        apiKey: $("#apiKey").value,
+        glossary: { fixed: [], protected: [] },
+      });
+      $("#modelHealth").textContent = "配置格式有效，保存后将在首次翻译时连接";
+      return;
+    }
     const health = await YounuoSettings.request("/health");
     if (health.ollamaError) throw new Error(health.ollamaError);
     $("#modelHealth").textContent = health.ollamaModels.includes(
@@ -144,6 +182,7 @@ $("#checkModel").onclick = async () => {
     b.disabled = false;
   }
 };
+$("#provider").onchange = renderProvider;
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.autoTranslateOrigins) renderSites();
 });

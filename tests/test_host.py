@@ -36,6 +36,12 @@ class GlossaryTests(unittest.TestCase):
         g = server.Glossary([{'source': 'workflow', 'target': '工作流'}], ['ComfyUI'])
         text, mapping = g.protect('ComfyUI workflow __YN_TERM_0__')
         self.assertEqual(g.restore(text, mapping), 'ComfyUI 工作流 __YN_TERM_0__')
+    def test_cjk_glossary_removes_model_spacing_only_at_cjk_boundaries(self):
+        g = server.Glossary([{'source': 'workflow', 'target': '工作流'}], [])
+        text, mapping = g.protect('此 workflow 很快')
+        self.assertEqual(g.restore(text, mapping), '此工作流很快')
+        text, mapping = g.protect('Use workflow here')
+        self.assertEqual(g.restore(text, mapping), 'Use 工作流 here')
     def test_reject_invalid_terms(self):
         for data in [{'fixed':[None]}, {'fixed':[{'source':'x','target':''}]}, {'protected':[7]}, {'fixed':'x'}]:
             with self.subTest(data=data), self.assertRaises(server.TranslationError):
@@ -66,7 +72,7 @@ class TranslationTests(unittest.TestCase):
             self.assertEqual(request.call_count,1)
     def test_qwen3_schema_and_no_thinking(self):
         with mock.patch.object(self.translator,'_request',return_value={'response':'{"translations":["翻訳"]}'}) as request:
-            self.translator.translate_many(['Hello'],'en','ja','qwen3:1.7b',server.Glossary([],[]))
+            self.translator.translate_many(['Hello'],'en','ja','qwen3.5:4b',server.Glossary([],[]))
             payload=request.call_args.args[1]
             self.assertFalse(payload['think'])
             self.assertEqual(payload['format']['properties']['translations']['type'],'array')
@@ -77,6 +83,16 @@ class TranslationTests(unittest.TestCase):
             self.translator.translate_one('Original','en','zh','qwen2.5:3b',server.Glossary([],[]),'草稿',True)
             payload=json.loads(request.call_args.args[1]['prompt'].split('\n',1)[1])
             self.assertEqual(payload,{'originals':['Original'],'drafts':['草稿']})
+    def test_openai_compatible_response_and_bearer_header(self):
+        opener = mock.MagicMock()
+        response = opener.open.return_value.__enter__.return_value
+        response.read.return_value = json.dumps({'choices':[{'message':{'content':'{"translations":["译文"]}'}}]}).encode()
+        with mock.patch.object(server.urllib.request, 'build_opener', return_value=opener):
+            translator = server.ExternalTranslator('https://api.example.com/v1/chat/completions', 'secret-key')
+            result = translator.translate_one('Hello', 'en', 'zh', 'vendor/model', server.Glossary([], []))
+        self.assertEqual(result, '译文')
+        request = opener.open.call_args.args[0]
+        self.assertEqual(request.get_header('Authorization'), 'Bearer secret-key')
 
 class HTTPTests(unittest.TestCase):
     @classmethod
@@ -103,7 +119,7 @@ class HTTPTests(unittest.TestCase):
     def test_extension_origin_health(self):
         with mock.patch.object(server.OLLAMA,'models',return_value=['qwen2.5:3b']):
             status,data,headers=self.request(path='/health',origin='chrome-extension://'+'a'*32)
-        self.assertEqual(status,200);self.assertEqual(data['version'],'0.8.0')
+        self.assertEqual(status,200);self.assertEqual(data['version'],'0.9.0')
         self.assertEqual(headers['Access-Control-Allow-Origin'],'chrome-extension://'+'a'*32)
     def test_invalid_json_and_types(self):
         for data in [b'{',[],{'texts':'abc'},{'texts':[None]},{'texts':['x'],'model':[]},{'texts':['x'],'target':'auto'},{'texts':['x'],'glossary':{'fixed':[None]}}]:
@@ -117,6 +133,17 @@ class HTTPTests(unittest.TestCase):
         with mock.patch.object(server.OLLAMA,'translate_many',return_value=['译文']):
             status,data,_=self.request({'texts':['Hello']})
         self.assertEqual((status,data),(200,{'translations':['译文']}))
+    def test_external_provider_dispatches_without_logging_key(self):
+        translator = mock.Mock()
+        translator.translate_many.return_value = ['外部译文']
+        payload = {'texts':['Hello'], 'model':'provider/model-v1', 'provider':'openai', 'external':{'url':'https://api.example.com/v1/chat/completions','key':'secret-key'}}
+        with mock.patch.object(server, 'external_translator', return_value=translator):
+            status, data, _ = self.request(payload)
+        self.assertEqual((status, data), (200, {'translations':['外部译文']}))
+        self.assertNotIn('secret-key', repr(translator.translate_many.call_args))
+    def test_external_provider_rejects_insecure_remote_url(self):
+        with self.assertRaises(server.TranslationError):
+            server.external_translator({'external': {'url':'http://api.example.com/v1/chat/completions','key':'secret'}})
     def test_busy_is_retryable_429(self):
         with mock.patch.object(server.OLLAMA,'translate_many',side_effect=server.BusyError('busy')):
             self.assertEqual(self.request({'texts':['Hello']})[0],429)

@@ -9,7 +9,7 @@ with ZipFile(root / 'dist' / f'younuo-local-translator-v{version}.zip') as archi
     names = {name.replace('\\', '/') for name in archive.namelist()}
     prefix = 'younuo-local-translator/'
     required = ['install.cmd', 'start-host.cmd', 'tools/start-host.ps1', 'tools/install.ps1', 'README.md', 'README_EN.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md',
-                'package.json', 'package-lock.json', 'build-package.cmd', 'docs/VALIDATION.md', 'docs/MODELS.md', 'docs/USAGE.md',
+                'package.json', 'package-lock.json', 'build-package.cmd', 'docs/MODELS.md', 'docs/USAGE.md', 'docs/VALIDATION.md',
                 'extension/manifest.json', 'host/server.py', 'tests/test_host.py', 'tests/browser.test.cjs']
     for name in required:
         assert prefix + name in names, f'Missing {name}'
