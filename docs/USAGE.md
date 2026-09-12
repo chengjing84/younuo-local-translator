@@ -15,7 +15,14 @@
 
 磁盘数字是容量规划，不是固定安装占用。Ollama 官方目前要求 Windows 10 22H2 或更新版本，程序需至少约 4GB 空间，模型另计；NVIDIA/AMD 加速还需兼容驱动。以 [Windows 安装说明](https://docs.ollama.com/windows) 和 [GPU 支持列表](https://docs.ollama.com/gpu) 为准。
 
-从 [Python 官网](https://www.python.org/downloads/windows/) 和 [Ollama 官网](https://ollama.com/download/windows) 安装。装完重新打开 PowerShell，使 PATH 更新生效。使用插件不需要 Node.js、Git、Docker、PyTorch 或单独安装 Python 的 CUDA 包；后台使用 Python 标准库。
+可以从 [Python 官网](https://www.python.org/downloads/windows/) 和 [Ollama 官网](https://ollama.com/download/windows) 安装，也可直接在 PowerShell 依次运行：
+
+```powershell
+winget install -e --id Python.Python.3.12
+winget install -e --id Ollama.Ollama
+```
+
+只使用外部 API 时可不安装 Ollama。装完重新打开 PowerShell，使 PATH 更新生效。使用插件不需要 Node.js、Git、Docker、PyTorch 或单独安装 Python 的 CUDA 包；后台使用 Python 标准库。
 
 ## 2. 下载一个模型
 
@@ -44,7 +51,7 @@ ollama list
 
 1. 从 [GitHub 仓库](https://github.com/chengjing84/younuo-local-translator) 下载源码 ZIP 并完整解压，或使用项目安装包。不要在 ZIP 预览中运行。
 2. 把目录放到准备长期保留的位置，双击 `install.cmd`。
-3. 等待出现安装成功。安装器会创建 `host/.venv`、生成 `host/config.json`、启动优诺后台，通过检查后设置当前用户登录自启；不会替你安装 Ollama 或下载模型。
+3. 等待出现安装成功。安装器会自动寻找 Python，创建 `host/.venv`、生成 `host/config.json`、启动优诺后台，通过检查后设置当前用户登录自启；不会替你安装 Ollama 或下载模型。若虚拟环境因移动目录、卸载旧 Python 等原因失效，再次运行安装器会自动重建，并保留 config.json。受管电脑若禁止写自启动项，安装仍会完成，以后开机后双击 `start-host.cmd` 即可。
 
 如果电脑有多个 Python，或 `python` 指向不可用环境，在项目根目录显式指定解释器：
 
@@ -59,7 +66,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\install.ps1 -Pyt
 1. 在 Edge 地址栏输入 `edge://extensions`，开启“开发人员模式”。
 2. 点击“加载解压缩的扩展”，选择项目内的 **extension** 文件夹，不是项目根目录。
 3. 在扩展菜单中固定优诺，打开弹窗进入“连接设置”。
-4. 用记事本打开 `host/config.json`，找到 `port` 和 `token`。本机服务地址填 `http://127.0.0.1:端口号`，令牌只复制 token 值，不带两侧引号。
+4. 用记事本打开 `host/config.json`，找到 `port` 和 `token`。本机服务地址填 `http://127.0.0.1:端口号`，令牌只复制 token 值，不带两侧引号。即使还没有 Ollama 模型，也可以先完成连接，再进入翻译设置配置外部 API。
 5. 点击“检查连接”，选择已安装模型，再点“保存连接，开始使用”。令牌或地址改动后需要重新检查。
 
 新安装默认端口是 **8765**，若自己的配置是其他端口就以配置为准；迁移后的本机可能使用 **18765**。不要把 Ollama 的 **11434** 填成优诺服务端口，两者是不同服务。不要把 token、完整 config.json 或含令牌的截图公开分享。
@@ -90,7 +97,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\install.ps1 -Pyt
 | 现象                          | 检查顺序                                                                                                                        |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | “尚未安装/尚未初始化”         | 确认自己打开的是已安装的同一目录；该目录应有 `host/config.json` 和 `host/.venv/Scripts/python.exe`。首次使用运行 `install.cmd`  |
-| Python 不存在或虚拟环境不可用 | 先检查 `python --version`，再用上面的 `-PythonPath` 指定可用 Python；已有损坏 venv 不会被安装器自动覆盖，应先备份配置再修复环境 |
+| Python 不存在或虚拟环境不可用 | 重新运行 `install.cmd`，安装器会自动重建损坏的 venv；若未安装 Python，运行 `winget install -e --id Python.Python.3.12` 后重试 |
 | 无法连接优诺                  | 运行 `start-host.cmd`；核对配置中的 port 与连接地址；不要填成 11434                                                             |
 | 令牌错误 / 401                | 从当前目录 config.json 重新复制，不要混用旧目录令牌                                                                             |
 | Ollama 不可用 / 模型缺失      | 打开 Ollama，执行 `ollama list`；下载的名称必须与所选模型完全一致                                                               |
@@ -100,6 +107,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\install.ps1 -Pyt
 | 页面始终不翻译                | 先检查是否为浏览器内部页、PDF、图片/Canvas、代码区或编辑区；这些不在当前支持范围                                                |
 
 后台单次模型等待约 20 秒，前端约 25 秒；持续超时不应反复连点。停止翻译会丢弃晚到结果，但已经在 Ollama 执行的推理可能继续。
+
+不确定卡在哪一步时，双击项目根目录的 `diagnose.cmd`。它会检查 PowerShell、Python 虚拟环境、优诺后台、Ollama API 和模型，并生成 `diagnostics.txt`。报告不会写入访问 token 或外部 API Key，可以随 GitHub Issue 提交；项目路径等本机信息仍应在分享前自行确认。
 
 查看后台的直接报错，可以在项目根目录执行下面的前台启动命令。若后台已经运行，先使用 `uninstall.cmd` 停止它；该脚本同时取消登录自启，排错后需运行 `install.cmd` 恢复自启。
 

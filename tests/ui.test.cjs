@@ -70,11 +70,12 @@ async function ui(name) {
   );
   return page;
 }
-test("setup requires installed model and saves selected available model", async () => {
+test("setup can finish without Ollama and saves selected available model", async () => {
   const p = await ui("setup");
   try {
     await p.locator("#checkHost").click();
-    assert.equal(await p.locator("#finish").isDisabled(), true);
+    assert.equal(await p.locator("#finish").isDisabled(), false);
+    assert.match(await p.locator("#checks").innerText(), /外部 API/);
     await p.evaluate(() => (models = ["qwen3.5:9b", "qwen3.5:4b"]));
     await p.locator("#checkHost").click();
     await p.locator("#finish").click();

@@ -18,15 +18,17 @@ See the detailed Chinese [model guide](docs/MODELS.md) and [installation, usage 
 
 ## Setup
 
-Requires Windows 10 22H2+ / 11, Microsoft Edge, Python 3.10+, and Ollama. Node.js is only needed for development.
+Requires Windows 10 22H2+ / 11, Microsoft Edge, and Python 3.10+. Ollama is required only for local models. Node.js is only needed for development. If needed, install prerequisites with `winget install -e --id Python.Python.3.12` and `winget install -e --id Ollama.Ollama`.
 
 1. Start Ollama and run `ollama pull qwen3.5:4b`. You may also enter another installed Ollama model or configure an OpenAI-compatible HTTPS API in Settings.
-2. Run `install.cmd`. It creates a Python environment, checks the local service, and enables startup for the current Windows user after successful validation.
+2. Fully extract the release, then run `install.cmd` outside the ZIP preview. It discovers Python, creates or repairs its Python environment, checks the local service, and enables startup for the current Windows user after successful validation.
 3. Open `edge://extensions`, enable developer mode, and load the `extension` directory.
 4. Copy the token from `host/config.json` into the connection page, check the connection, and select an installed model.
 5. Open a normal webpage and click Start Translation.
 
 Use `start-host.cmd` for manual startup. `uninstall.cmd` stops this project's service and removes auto-start; remove the Edge extension separately. Ollama is managed separately.
+
+For troubleshooting, run `diagnose.cmd`. It creates `diagnostics.txt` with Python, host and Ollama checks, excluding the local token and external API keys.
 
 ## Features and boundaries
 

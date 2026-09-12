@@ -25,7 +25,9 @@
 
 ## 快速开始
 
-环境：Windows 10 22H2+/11、Microsoft Edge、Python 3.10+、Ollama。使用插件无需 Node.js；它仅用于开发测试。
+环境：Windows 10 22H2+/11、Microsoft Edge、Python 3.10+；使用本机模型时还需 Ollama。使用插件无需 Node.js；它仅用于开发测试。
+
+尚未安装 Python 时，可先在 PowerShell 运行 `winget install -e --id Python.Python.3.12`；使用本机模型但尚未安装 Ollama 时，运行 `winget install -e --id Ollama.Ollama`。安装完成后重新打开终端或直接重新双击安装器。
 
 1. 安装并启动 Ollama，下载模型：
 
@@ -35,12 +37,14 @@
 
    极致速度可选 `qwen2.5:3b`，质量悠闲可选 `qwen3.5:9b`。1.7B 不再推荐。
 
-2. 解压发布包，双击 `install.cmd`。安装器检查 Python、创建虚拟环境、启动服务，成功后设置当前用户登录自启。后台仅依赖 Python 标准库，无付费 API。
+2. **完整解压**发布包，双击 `install.cmd`（不要在 ZIP 预览里运行）。安装器会寻找 Python、创建或自动修复虚拟环境、启动服务，成功后设置当前用户登录自启。后台仅依赖 Python 标准库，无付费 API。
 3. 打开 `edge://extensions`，启用开发人员模式，加载本项目的 **extension** 文件夹。
 4. 在首次连接页粘贴 `host/config.json` 中的 token，检查连接，选择已安装模型并保存。
 5. 回到普通网页，点击优诺 → **开始翻译**。
 
 日常启动：`start-host.cmd`。取消后台自启并停止服务：`uninstall.cmd`；扩展需在 Edge 中手动移除。Ollama 的安装、启动与模型下载由用户自行管理。
+
+遇到问题可双击 `diagnose.cmd`，它会在项目根目录生成不含 token/API Key 的 `diagnostics.txt`，按报告逐项处理或随 GitHub Issue 提交。
 
 如果 PATH 中的 Python 指向错误环境，可显式指定：`powershell -ExecutionPolicy Bypass -File tools/install.ps1 -PythonPath "C:\你的Python路径\python.exe"`。
 

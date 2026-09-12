@@ -25,7 +25,7 @@ try {
     foreach ($Name in @('server.py','config.example.json','requirements.txt','install.ps1','start.ps1','run-hidden.vbs','launch-hidden.cmd')) {
         Copy-Item -LiteralPath (Join-Path $ProjectRoot "host\$Name") -Destination (Join-Path $PackageRoot 'host')
     }
-    foreach ($Name in @('README.md','README_EN.md','LICENSE','CHANGELOG.md','CONTRIBUTING.md','package.json','install.cmd','uninstall.cmd','start-host.cmd','build-package.cmd')) {
+    foreach ($Name in @('README.md','README_EN.md','LICENSE','CHANGELOG.md','CONTRIBUTING.md','package.json','install.cmd','uninstall.cmd','start-host.cmd','diagnose.cmd','build-package.cmd')) {
         Copy-Item -LiteralPath (Join-Path $ProjectRoot $Name) -Destination $PackageRoot
     }
     if (Test-Path -LiteralPath (Join-Path $ProjectRoot 'package-lock.json')) { Copy-Item -LiteralPath (Join-Path $ProjectRoot 'package-lock.json') -Destination $PackageRoot }

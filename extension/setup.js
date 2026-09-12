@@ -68,21 +68,26 @@ $("#checkHost").onclick = async () => {
     );
     const select = $("#qwenModel");
     select.replaceChildren();
+    if (!installed.length) installed.push(YounuoSettings.models[0]);
     for (const model of installed) {
       const o = document.createElement("option");
       o.value = model;
       o.textContent = YounuoSettings.modelLabel(model);
       select.append(o);
     }
-    if (!installed.length) {
+    if (!available.length) {
       $("#checks").append(
-        row("翻译模型", "未找到支持的模型，请先下载", "error"),
+        row(
+          "翻译模型",
+          "未找到 Ollama 模型；可先保存连接，再下载模型或配置外部 API",
+          "error",
+        ),
       );
-      return;
+    } else {
+      $("#checks").append(row("翻译模型", `${installed.length} 个可用`, "ok"));
     }
-    $("#checks").append(row("翻译模型", `${installed.length} 个可用`, "ok"));
-    verified = data.ollamaError ? null : { token, hostUrl };
-    $("#finish").disabled = !verified;
+    verified = { token, hostUrl };
+    $("#finish").disabled = false;
   } catch (error) {
     $("#checks").replaceChildren(
       row(
